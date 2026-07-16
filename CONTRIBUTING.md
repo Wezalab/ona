@@ -1,6 +1,6 @@
 # Contributing to ONA
 
-Thank you for your interest in contributing to ONA. This project is built and maintained by [WEZA LAB](https://wezalab.org) and supported by the UNICEF Venture Fund. ONA is an open source mobile screening tool that uses on-device AI to detect early signs of vision impairment in low-resource clinical settings.
+Thank you for your interest in contributing to ONA. This project is built and maintained by WEZA LAB. ONA is an open source mobile screening tool that uses on-device AI to detect early signs of vision impairment in low-resource clinical settings.
 
 All contributions are licensed under [Apache 2.0](./LICENSE).
 
@@ -60,7 +60,7 @@ If you are unsure where to start, look for issues tagged `good first issue`.
 ### Fork and clone
 
 ```bash
-git clone https://github.com/wezalab/ona.git
+git clone https://github.com/guillainbisimwa/ona.git
 cd ona
 ```
 
@@ -158,7 +158,7 @@ For large changes (new screens, new AI models, new data pipelines), open an issu
 
 ## Reporting a bug or requesting a feature
 
-Use [GitHub Issues](https://github.com/wezalab/ona/issues).
+Use [GitHub Issues](https://github.com/guillainbisimwa/ona/issues).
 
 When reporting a bug, please include:
 - Device model and Android version
@@ -180,12 +180,11 @@ When reporting a bug, please include:
 
 ## Community and contact
 
-- **Email:** hello@wezalab.org
-- **GitHub Discussions:** open a discussion for questions, ideas, or general feedback
-- **UNICEF Venture Fund:** this project is part of the UNICEF Venture Fund cohort — more at [unicefinnovationfund.org](https://unicefinnovationfund.org)
+- **Email:** wezalab@gmail.com
+- **GitHub Discussions:** open a discussion for questions, ideas, or general feedback about ONA
 
 We follow the [Contributor Covenant](https://www.contributor-covenant.org/) code of conduct. Be respectful, constructive, and inclusive.
 
 ---
 
-*Built by WEZA LAB in the Democratic Republic of Congo. Licensed under Apache 2.0.*
+*ONA is built by WEZA LAB in the Democratic Republic of Congo. Licensed under Apache 2.0.*
