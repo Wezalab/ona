@@ -4,6 +4,8 @@
 
 Welcome to the ONA application user manual.
 
+ONA is a mobile vision screening app for community health workers. It guides you through patient consent, eye capture, AI analysis, visual acuity testing, and screening results — including when you are offline.
+
 ## Features
 
 ### Screens
@@ -26,12 +28,11 @@ Welcome to the ONA application user manual.
 
 ## Getting Started
 
-1. Launch the application
+1. Launch ONA
 2. Select your preferred language
 3. Review and accept the consent terms
-4. Follow the on-screen instructions
+4. Follow the on-screen instructions to complete a screening
 
 ## Support
 
-For support and questions, please contact the development team.
-
+For support and questions about ONA, contact WEZA LAB at **wezalab@gmail.com**.
