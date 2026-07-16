@@ -8,7 +8,9 @@ Built by [WEZA LAB](https://wezalab.org) in the Democratic Republic of Congo. Op
 
 ### Demo
 
-Watch the ONA pitch and product overview: [YouTube](https://www.youtube.com/watch?v=gtX4Hn4JZc0)
+[![ONA pitch and product overview](https://img.youtube.com/vi/gtX4Hn4JZc0/hqdefault.jpg)](https://www.youtube.com/watch?v=gtX4Hn4JZc0)
+
+Watch the ONA pitch and product overview on [YouTube](https://www.youtube.com/watch?v=gtX4Hn4JZc0).
 
 ---
 
