@@ -27,5 +27,5 @@
     "eslint-config-expo": "~7.1.2",
     "typescript": "^5.3.0"
   },
-  "private": true
+  "license": "Apache-2.0"
 }
