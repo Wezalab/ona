@@ -6,6 +6,10 @@ ONA helps detect early signs of vision impairment and preventable blindness in c
 
 Built by [WEZA LAB](https://wezalab.org) in the Democratic Republic of Congo. Open source under [Apache 2.0](./LICENSE).
 
+### Demo
+
+Watch the ONA pitch and product overview: [YouTube](https://www.youtube.com/watch?v=gtX4Hn4JZc0)
+
 ---
 
 ## Why ONA
