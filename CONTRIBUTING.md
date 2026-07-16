@@ -60,7 +60,7 @@ If you are unsure where to start, look for issues tagged `good first issue`.
 ### Fork and clone
 
 ```bash
-git clone https://github.com/guillainbisimwa/ona.git
+git clone https://github.com/Wezalab/ona.git
 cd ona
 ```
 
@@ -158,7 +158,7 @@ For large changes (new screens, new AI models, new data pipelines), open an issu
 
 ## Reporting a bug or requesting a feature
 
-Use [GitHub Issues](https://github.com/guillainbisimwa/ona/issues).
+Use [GitHub Issues](https://github.com/Wezalab/ona/issues).
 
 When reporting a bug, please include:
 - Device model and Android version

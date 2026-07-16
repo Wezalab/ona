@@ -72,7 +72,7 @@ See [USER-MANUAL.md](./USER-MANUAL.md) for end-user documentation.
 ### Install
 
 ```bash
-git clone https://github.com/guillainbisimwa/ona.git
+git clone https://github.com/Wezalab/ona.git
 cd ona
 bun install   # or: npm install
 ```
@@ -143,6 +143,6 @@ Copyright © WEZA LAB. Licensed under the [Apache License 2.0](./LICENSE).
 ## Contact
 
 - **ONA / WEZA LAB:** wezalab@gmail.com  
-- **Issues:** [GitHub Issues](https://github.com/guillainbisimwa/ona/issues)  
+- **Issues:** [GitHub Issues](https://github.com/Wezalab/ona/issues)  
 
 ONA is built in the Democratic Republic of Congo for communities that deserve better access to eye care.
