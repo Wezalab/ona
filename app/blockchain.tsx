@@ -110,6 +110,7 @@ export default function BlockchainScreen() {
     network,
     networkLoading,
     proofQueue,
+    onChainCount,
     pendingCount,
     anchoredCount,
     refreshNetwork,
@@ -173,6 +174,12 @@ export default function BlockchainScreen() {
           <Text style={styles.statValue}>{anchoredCount}</Text>
           <Text style={styles.statLabel}>{t(language, 'blockchainAnchored')}</Text>
         </View>
+        {onChainCount !== null && (
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>{onChainCount}</Text>
+            <Text style={styles.statLabel}>On-chain total</Text>
+          </View>
+        )}
       </View>
 
       {/* Privacy notice */}
