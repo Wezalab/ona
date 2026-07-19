@@ -53,6 +53,29 @@ function requireEnv(): void {
   }
 }
 
+/** Retry a network operation on transient transport errors (fetch failed, resets, timeouts). */
+async function withRetry<T>(label: string, fn: () => Promise<T>, attempts = 4): Promise<T> {
+  let lastErr: unknown;
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      const msg = err instanceof Error ? err.message : String(err);
+      const cause = (err as { cause?: unknown })?.cause;
+      const transient =
+        /fetch failed|ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|socket hang up|network|timeout/i.test(
+          msg + ' ' + String(cause ?? ''),
+        );
+      if (!transient || i === attempts) throw err;
+      const waitMs = 2000 * i;
+      console.log(`  ${label} failed (${msg}) — retry ${i}/${attempts - 1} in ${waitMs / 1000}s...`);
+      await new Promise((r) => setTimeout(r, waitMs));
+    }
+  }
+  throw lastErr;
+}
+
 async function main(): Promise<void> {
   requireEnv();
 
@@ -72,7 +95,9 @@ async function main(): Promise<void> {
   // estimateFee for a freshly-compiled Sierra class (their simulation VM lags
   // the sequencer). Supplying explicit resourceBounds makes starknet.js skip
   // estimation and submit directly — the sequencer executes the class fine.
-  const block = await provider.getBlockWithTxHashes('latest');
+  const block = await withRetry('fetch gas prices', () =>
+    provider.getBlockWithTxHashes('latest'),
+  );
   const priceFri = (p?: { price_in_fri?: string }): bigint =>
     p?.price_in_fri ? BigInt(p.price_in_fri) : 0n;
   const BUFFER = 3n; // price headroom for inter-block fluctuation
@@ -103,7 +128,9 @@ async function main(): Promise<void> {
 
   // ── 1. Declare (skips if the class is already declared) ──────────────────────
   console.log('\n→ Declaring contract class...');
-  const declareResponse = await account.declareIfNot({ contract: sierra, casm }, { resourceBounds });
+  const declareResponse = await withRetry('declare', () =>
+    account.declareIfNot({ contract: sierra, casm }, { resourceBounds }),
+  );
   const classHash = declareResponse.class_hash;
 
   if (declareResponse.transaction_hash) {
@@ -116,12 +143,14 @@ async function main(): Promise<void> {
 
   // ── 2. Deploy (constructor: owner = deployer address) ────────────────────────
   console.log('\n→ Deploying contract...');
-  const deployResponse = await account.deployContract(
-    {
-      classHash,
-      constructorCalldata: [ACCOUNT_ADDRESS as string],
-    },
-    { resourceBounds },
+  const deployResponse = await withRetry('deploy', () =>
+    account.deployContract(
+      {
+        classHash,
+        constructorCalldata: [ACCOUNT_ADDRESS as string],
+      },
+      { resourceBounds },
+    ),
   );
   console.log(`  Deploy tx: ${deployResponse.transaction_hash}`);
   await provider.waitForTransaction(deployResponse.transaction_hash);
@@ -159,5 +188,13 @@ async function main(): Promise<void> {
 
 main().catch((err) => {
   console.error('\nDeployment failed:', err instanceof Error ? err.message : err);
+  const cause = (err as { cause?: unknown })?.cause;
+  if (cause) console.error('Cause:', cause);
+  console.error(
+    '\nIf this is a transport error (fetch failed), try a different RPC:\n' +
+      '  export STARKNET_RPC=https://starknet-sepolia-rpc.publicnode.com\n' +
+      '  # or: https://starknet-sepolia.drpc.org\n' +
+      'then re-run the deploy.',
+  );
   process.exit(1);
 });
