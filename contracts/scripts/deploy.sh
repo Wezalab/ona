@@ -15,7 +15,9 @@
 
 set -euo pipefail
 
-SEPOLIA_RPC="https://starknet-sepolia.public.blastapi.io/rpc/v0_7"
+# starkli 0.4.x speaks JSON-RPC spec v0.8 — this endpoint is pinned to 0.8.1.
+# (Blast API is decommissioned; un-versioned public RPCs now default to 0.9+.)
+SEPOLIA_RPC="https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_8"
 NETWORK="sepolia"
 
 echo ""
