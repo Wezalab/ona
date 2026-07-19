@@ -102,26 +102,28 @@ async function main(): Promise<void> {
     p?.price_in_fri ? BigInt(p.price_in_fri) : 0n;
   const BUFFER = 3n; // price headroom for inter-block fluctuation
 
+  // Values MUST be bigint: starknet.js does BigInt arithmetic on them when
+  // hashing the tx (mixing bigint with hex strings throws "Cannot mix BigInt").
+  // It converts bigint -> hex itself for the RPC request.
   const resourceBounds = {
     l1_gas: {
-      max_amount: '0x400', // 1024 units
-      max_price_per_unit: '0x' + (priceFri(block.l1_gas_price) * BUFFER).toString(16),
+      max_amount: 0x400n, // 1024 units
+      max_price_per_unit: priceFri(block.l1_gas_price) * BUFFER,
     },
     l1_data_gas: {
-      max_amount: '0x20000', // 131072 units
-      max_price_per_unit: '0x' + (priceFri(block.l1_data_gas_price) * BUFFER).toString(16),
+      max_amount: 0x20000n, // 131072 units
+      max_price_per_unit: priceFri(block.l1_data_gas_price) * BUFFER,
     },
     l2_gas: {
-      max_amount: '0x4000000', // ~67M units
-      max_price_per_unit: '0x' + (priceFri(block.l2_gas_price) * BUFFER).toString(16),
+      max_amount: 0x4000000n, // ~67M units
+      max_price_per_unit: priceFri(block.l2_gas_price) * BUFFER,
     },
   };
 
   const maxFeeFri =
-    BigInt(resourceBounds.l1_gas.max_amount) * BigInt(resourceBounds.l1_gas.max_price_per_unit) +
-    BigInt(resourceBounds.l1_data_gas.max_amount) *
-      BigInt(resourceBounds.l1_data_gas.max_price_per_unit) +
-    BigInt(resourceBounds.l2_gas.max_amount) * BigInt(resourceBounds.l2_gas.max_price_per_unit);
+    resourceBounds.l1_gas.max_amount * resourceBounds.l1_gas.max_price_per_unit +
+    resourceBounds.l1_data_gas.max_amount * resourceBounds.l1_data_gas.max_price_per_unit +
+    resourceBounds.l2_gas.max_amount * resourceBounds.l2_gas.max_price_per_unit;
   console.log(
     `  Max fee cap: ~${(Number(maxFeeFri) / 1e18).toFixed(4)} STRK (account must hold at least this)`,
   );
