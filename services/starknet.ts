@@ -5,8 +5,8 @@ import { RpcProvider, Account, Contract, Signer, hash, num, constants as starkCo
 // Starknet Sepolia testnet — switch to MAINNET after clinical validation
 export const STARKNET_NETWORK = starkConstants.NetworkName.SN_SEPOLIA;
 
-// Public Starknet Sepolia RPC (no API key needed for reads)
-const SEPOLIA_RPC = 'https://starknet-sepolia.public.blastapi.io/rpc/v0_7';
+// Public Starknet Sepolia RPC (no API key needed for reads), pinned to spec v0.8
+const SEPOLIA_RPC = 'https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_8';
 
 // ONA Impact Registry contract on Sepolia.
 // Updated automatically by contracts/scripts/deploy.sh after deployment.
