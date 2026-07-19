@@ -35,7 +35,9 @@ cd contracts
 scarb build
 ```
 
-Output: `target/dev/ona_contracts_ImpactRegistry.contract_class.json`
+Outputs (with `casm = true` in `Scarb.toml`):
+- `target/dev/ona_contracts_ImpactRegistry.contract_class.json` (Sierra)
+- `target/dev/ona_contracts_ImpactRegistry.compiled_contract_class.json` (CASM)
 
 ## Test
 
@@ -66,7 +68,28 @@ starkli account deploy ~/.starkli-wallets/deployer/account.json \
 # https://starknet-faucet.vercel.app/
 ```
 
-### 2. Run the deploy script
+### 2. Deploy
+
+There are two deploy paths. **Prefer the starknet.js path** — recent Scarb
+emits Sierra 1.9.2+, which the compiler bundled in `starkli` 0.4.x rejects
+(`unsupported Sierra version`). starknet.js declares the Sierra + CASM that
+Scarb already produced, so it stays compatible with the latest toolchain.
+
+**Recommended — starknet.js (`scripts/deploy-contract.ts`):**
+
+```bash
+# Reveal the deployer private key from your starkli keystore
+export STARKNET_ACCOUNT_ADDRESS=0x014e9e...        # the deployed account
+export STARKNET_PRIVATE_KEY=$(starkli signer keystore inspect-private \
+  ~/.starkli-wallets/deployer/keystore.json --raw)
+
+# Build (once) then declare + deploy
+scarb build
+npx tsx scripts/deploy-contract.ts
+```
+
+**Alternative — starkli (`scripts/deploy.sh`):** only works when your Scarb's
+Sierra version is supported by the installed `starkli` release.
 
 ```bash
 export STARKNET_ACCOUNT=~/.starkli-wallets/deployer/account.json
@@ -74,11 +97,10 @@ export STARKNET_KEYSTORE=~/.starkli-wallets/deployer/keystore.json
 bash scripts/deploy.sh
 ```
 
-The script will:
-1. Build the contract with Scarb
-2. Declare the class on Starknet Sepolia
-3. Deploy with your address as owner
-4. Automatically update `ONA_IMPACT_CONTRACT_ADDRESS` in `services/starknet.ts`
+Either path will:
+1. Declare the class on Starknet Sepolia
+2. Deploy with your address as owner
+3. Automatically update `ONA_IMPACT_CONTRACT_ADDRESS` in `services/starknet.ts`
 
 ### 3. Verify on Voyager
 
