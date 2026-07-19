@@ -32,8 +32,9 @@ const SIERRA_PATH = join(TARGET_DIR, 'ona_contracts_ImpactRegistry.contract_clas
 const CASM_PATH = join(TARGET_DIR, 'ona_contracts_ImpactRegistry.compiled_contract_class.json');
 const SERVICE_PATH = join(REPO_ROOT, 'services', 'starknet.ts');
 
-const RPC_URL =
-  process.env.STARKNET_RPC ?? 'https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_8';
+// starknet.js 10.x speaks RPC spec 0.9+, NOT 0.8. Use an endpoint on 0.9.0
+// (the v0_8-pinned Cartridge URL returns -32603 on estimateFee here).
+const RPC_URL = process.env.STARKNET_RPC ?? 'https://api.cartridge.gg/x/starknet/sepolia';
 const ACCOUNT_ADDRESS = process.env.STARKNET_ACCOUNT_ADDRESS;
 const PRIVATE_KEY = process.env.STARKNET_PRIVATE_KEY;
 
