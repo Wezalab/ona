@@ -67,9 +67,43 @@ async function main(): Promise<void> {
   const signer = new Signer(PRIVATE_KEY as string);
   const account = new Account({ provider, address: ACCOUNT_ADDRESS as string, signer });
 
+  // ── Manual resource bounds ───────────────────────────────────────────────────
+  // Public RPC nodes currently return "-32603 Internal error" when asked to
+  // estimateFee for a freshly-compiled Sierra class (their simulation VM lags
+  // the sequencer). Supplying explicit resourceBounds makes starknet.js skip
+  // estimation and submit directly — the sequencer executes the class fine.
+  const block = await provider.getBlockWithTxHashes('latest');
+  const priceFri = (p?: { price_in_fri?: string }): bigint =>
+    p?.price_in_fri ? BigInt(p.price_in_fri) : 0n;
+  const BUFFER = 3n; // price headroom for inter-block fluctuation
+
+  const resourceBounds = {
+    l1_gas: {
+      max_amount: '0x400', // 1024 units
+      max_price_per_unit: '0x' + (priceFri(block.l1_gas_price) * BUFFER).toString(16),
+    },
+    l1_data_gas: {
+      max_amount: '0x20000', // 131072 units
+      max_price_per_unit: '0x' + (priceFri(block.l1_data_gas_price) * BUFFER).toString(16),
+    },
+    l2_gas: {
+      max_amount: '0x4000000', // ~67M units
+      max_price_per_unit: '0x' + (priceFri(block.l2_gas_price) * BUFFER).toString(16),
+    },
+  };
+
+  const maxFeeFri =
+    BigInt(resourceBounds.l1_gas.max_amount) * BigInt(resourceBounds.l1_gas.max_price_per_unit) +
+    BigInt(resourceBounds.l1_data_gas.max_amount) *
+      BigInt(resourceBounds.l1_data_gas.max_price_per_unit) +
+    BigInt(resourceBounds.l2_gas.max_amount) * BigInt(resourceBounds.l2_gas.max_price_per_unit);
+  console.log(
+    `  Max fee cap: ~${(Number(maxFeeFri) / 1e18).toFixed(4)} STRK (account must hold at least this)`,
+  );
+
   // ── 1. Declare (skips if the class is already declared) ──────────────────────
   console.log('\n→ Declaring contract class...');
-  const declareResponse = await account.declareIfNot({ contract: sierra, casm });
+  const declareResponse = await account.declareIfNot({ contract: sierra, casm }, { resourceBounds });
   const classHash = declareResponse.class_hash;
 
   if (declareResponse.transaction_hash) {
@@ -82,10 +116,13 @@ async function main(): Promise<void> {
 
   // ── 2. Deploy (constructor: owner = deployer address) ────────────────────────
   console.log('\n→ Deploying contract...');
-  const deployResponse = await account.deployContract({
-    classHash,
-    constructorCalldata: [ACCOUNT_ADDRESS as string],
-  });
+  const deployResponse = await account.deployContract(
+    {
+      classHash,
+      constructorCalldata: [ACCOUNT_ADDRESS as string],
+    },
+    { resourceBounds },
+  );
   console.log(`  Deploy tx: ${deployResponse.transaction_hash}`);
   await provider.waitForTransaction(deployResponse.transaction_hash);
 
