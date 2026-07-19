@@ -60,7 +60,7 @@ starkli account oz init ~/.starkli-wallets/deployer/account.json
 # Deploy the account (needs ETH on Sepolia)
 starkli account deploy ~/.starkli-wallets/deployer/account.json \
   --keystore ~/.starkli-wallets/deployer/keystore.json \
-  --rpc https://starknet-sepolia.public.blastapi.io/rpc/v0_7
+  --rpc https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_8
 
 # Get test ETH from the faucet
 # https://starknet-faucet.vercel.app/
