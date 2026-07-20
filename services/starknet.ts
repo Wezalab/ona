@@ -12,7 +12,7 @@ const SEPOLIA_RPC = 'https://api.cartridge.gg/x/starknet/sepolia';
 // ONA Impact Registry contract on Sepolia.
 // Updated automatically by contracts/scripts/deploy.sh after deployment.
 export const ONA_IMPACT_CONTRACT_ADDRESS =
-  '0x0000000000000000000000000000000000000000000000000000000000000000';
+  '0x59a9326fa43200b60bd504ae9eee12a404258c65888248e7dbbe954a19aea08';
 
 // Typed ABI for the ImpactRegistry contract — mirrors contracts/src/lib.cairo
 export const IMPACT_REGISTRY_ABI = [
