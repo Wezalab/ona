@@ -7,9 +7,11 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:starknet": "tsx scripts/test-starknet.ts"
   },
   "dependencies": {
+    "buffer": "^6.0.3",
     "expo": "~51.0.0",
     "expo-constants": "~16.0.2",
     "expo-linking": "~6.3.1",
@@ -18,7 +20,9 @@
     "react": "18.2.0",
     "react-native": "0.74.0",
     "react-native-safe-area-context": "4.10.5",
-    "react-native-screens": "3.31.1"
+    "react-native-screens": "3.31.1",
+    "starknet": "^10.0.2",
+    "stream-browserify": "^3.0.0"
   },
   "devDependencies": {
     "@types/react": "~18.2.45",
