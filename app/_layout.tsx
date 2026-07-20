@@ -1,9 +1,11 @@
+import "../polyfills";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AppProvider } from "@/contexts/AppContext";
+import { ApiProvider } from "@/contexts/ApiContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -26,6 +28,8 @@ function RootLayoutNav() {
       <Stack.Screen name="history" />
       <Stack.Screen name="screening-detail" />
       <Stack.Screen name="settings" />
+      <Stack.Screen name="api-settings" />
+      <Stack.Screen name="blockchain" />
       <Stack.Screen name="about" />
     </Stack>
   );
@@ -40,7 +44,9 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <AppProvider>
-          <RootLayoutNav />
+          <ApiProvider>
+            <RootLayoutNav />
+          </ApiProvider>
         </AppProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>

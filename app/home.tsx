@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Image } from 'react-native';
-import { Plus, History, Settings, Info } from 'lucide-react-native';
+import { Plus, History, Settings, Info, Server, ShieldCheck } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import Colors from '@/constants/colors';
 
@@ -24,6 +24,20 @@ export default function HomeScreen() {
       onPress: () => router.push('/history'),
     },
     {
+      icon: Server,
+      title: t.home.server,
+      description: t.home.serverDesc,
+      color: Colors.success,
+      onPress: () => router.push('/api-settings'),
+    },
+    {
+      icon: ShieldCheck,
+      title: t.home.blockchain,
+      description: t.home.blockchainDesc,
+      color: Colors.primaryLight,
+      onPress: () => router.push('/blockchain'),
+    },
+    {
       icon: Settings,
       title: t.home.settings,
       description: t.home.settingsDesc,
@@ -44,7 +58,7 @@ export default function HomeScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <Image
-            source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/9vlow4ppzc6erbcy80bri' }}
+            source={require('@/assets/images/icon.png')}
             style={styles.logo}
             resizeMode="contain"
           />

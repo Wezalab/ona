@@ -1,16 +1,35 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
-import { CheckCircle2, AlertTriangle, AlertCircle, Save } from 'lucide-react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
+import { CheckCircle2, AlertTriangle, AlertCircle, Save, CloudUpload } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
+import { useApi } from '@/contexts/ApiContext';
+import type { Sex } from '@/types/api';
 import Colors from '@/constants/colors';
-import React from "react";
+import React, { useState } from "react";
+
+type SubmitState = 'idle' | 'submitting' | 'done' | 'error';
 
 export default function ScreeningResultsScreen() {
   const router = useRouter();
   const { t, currentScreening, saveScreening } = useApp();
+  const { isAuthenticated, selectedClinic, submitScreening } = useApi();
+
+  const [submitState, setSubmitState] = useState<SubmitState>('idle');
+  const [message, setMessage] = useState<string | null>(null);
 
   const visualAcuity = currentScreening.visualAcuity;
   const eyeImages = currentScreening.eyeImages;
+  const patientInfo = currentScreening.patientInfo;
+  const canSubmit = isAuthenticated && !!selectedClinic;
 
   const getRiskColor = (risk: 'low' | 'medium' | 'high') => {
     switch (risk) {
@@ -59,16 +78,60 @@ export default function ScreeningResultsScreen() {
     }
   };
 
+  const overallRisk = getOverallRisk();
+
+  // Map the local screening into the anonymized API payload. No patient
+  // identifiers are sent — only pseudonymized reference, coarse demographics
+  // and the AI risk summary.
+  const buildApiPayload = () => {
+    const scores = eyeImages
+      ? [eyeImages.rightEye.aiScore, eyeImages.leftEye.aiScore]
+      : [];
+    const confidence = scores.length
+      ? scores.reduce((a, b) => a + b, 0) / scores.length
+      : 0.5;
+    const ageNum = patientInfo?.age ? Number(patientInfo.age) : undefined;
+    return {
+      patientReference: patientInfo?.patientId?.trim() || undefined,
+      patientAge: Number.isFinite(ageNum) ? (ageNum as number) : undefined,
+      patientSex: patientInfo?.gender as Sex | undefined,
+      ai: {
+        prediction: `Eye screening (${overallRisk} risk)`,
+        riskLevel: overallRisk,
+        confidence,
+        modelVersion: 'mobile-sim-1',
+      },
+      isReferral: overallRisk !== 'low',
+      device: { platform: Platform.OS, appVersion: '1.0.0' },
+    };
+  };
+
   const handleSaveAndFinish = async () => {
     try {
       await saveScreening();
-      router.replace('/home');
     } catch (error) {
       console.error('Error saving screening:', error);
     }
-  };
 
-  const overallRisk = getOverallRisk();
+    // Best-effort offline-first submit to the ONA backend when connected.
+    if (canSubmit) {
+      setSubmitState('submitting');
+      setMessage(null);
+      try {
+        await submitScreening(buildApiPayload());
+        setSubmitState('done');
+        router.replace('/home');
+        return;
+      } catch {
+        // Item is persisted in the offline queue regardless — surface a soft note.
+        setSubmitState('error');
+        setMessage(t.error);
+        return;
+      }
+    }
+
+    router.replace('/home');
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -162,14 +225,38 @@ export default function ScreeningResultsScreen() {
         </View>
 
         <View style={styles.footer}>
+          {canSubmit ? (
+            <View style={styles.syncHint}>
+              <CloudUpload size={18} color={Colors.primary} />
+              <Text style={styles.syncHintText}>
+                {selectedClinic?.name} · #{selectedClinic?.code}
+              </Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.loginHint}
+              activeOpacity={0.7}
+              onPress={() => router.push('/api-settings')}
+            >
+              <Text style={styles.loginHintText}>{t.apiSettings.loginRequired}</Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
-            style={styles.button}
+            style={[styles.button, submitState === 'submitting' && styles.buttonDisabled]}
             onPress={handleSaveAndFinish}
+            disabled={submitState === 'submitting'}
             activeOpacity={0.8}
           >
-            <Save size={20} color={Colors.surface} />
+            {submitState === 'submitting' ? (
+              <ActivityIndicator color={Colors.surface} />
+            ) : (
+              <Save size={20} color={Colors.surface} />
+            )}
             <Text style={styles.buttonText}>{t.results.saveAndFinish}</Text>
           </TouchableOpacity>
+
+          {message ? <Text style={styles.submitError}>{message}</Text> : null}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -317,5 +404,37 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: Colors.surface,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  syncHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  syncHintText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+  },
+  loginHint: {
+    backgroundColor: Colors.infoLight,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+  loginHintText: {
+    fontSize: 13,
+    color: Colors.text,
+    textAlign: 'center',
+  },
+  submitError: {
+    fontSize: 13,
+    color: Colors.danger,
+    textAlign: 'center',
+    marginTop: 12,
   },
 });
