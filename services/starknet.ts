@@ -59,6 +59,43 @@ export const IMPACT_REGISTRY_ABI = [
       { name: 'anchored_at', type: 'core::integer::u64', kind: 'data' },
     ],
   },
+  {
+    type: 'event',
+    name: 'ona_contracts::ImpactRegistry::OwnershipTransferred',
+    kind: 'struct',
+    members: [
+      {
+        name: 'previous_owner',
+        type: 'core::starknet::contract_address::ContractAddress',
+        kind: 'data',
+      },
+      {
+        name: 'new_owner',
+        type: 'core::starknet::contract_address::ContractAddress',
+        kind: 'data',
+      },
+    ],
+  },
+  {
+    // Top-level Event enum — starknet.js requires this to be present alongside
+    // the event structs, otherwise Contract construction throws
+    // "inconsistency in ABI events definition."
+    type: 'event',
+    name: 'ona_contracts::ImpactRegistry::Event',
+    kind: 'enum',
+    variants: [
+      {
+        name: 'ScreeningProofAnchored',
+        type: 'ona_contracts::ImpactRegistry::ScreeningProofAnchored',
+        kind: 'nested',
+      },
+      {
+        name: 'OwnershipTransferred',
+        type: 'ona_contracts::ImpactRegistry::OwnershipTransferred',
+        kind: 'nested',
+      },
+    ],
+  },
 ] as const;
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
