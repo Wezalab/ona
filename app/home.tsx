@@ -16,6 +16,7 @@ export default function HomeScreen() {
         { label: t(language, 'startVaTest'), href: '/va-calibration' },
         { label: t(language, 'history'), href: '/history' },
         { label: t(language, 'settings'), href: '/settings' },
+        { label: t(language, 'apiServerNav'), href: '/api-settings' },
         { label: t(language, 'blockchainNav'), href: '/blockchain' },
         { label: t(language, 'about'), href: '/about' },
       ]}
