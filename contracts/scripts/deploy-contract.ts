@@ -115,7 +115,7 @@ async function main(): Promise<void> {
       max_price_per_unit: priceFri(block.l1_data_gas_price) * BUFFER,
     },
     l2_gas: {
-      max_amount: 0x10000000n, // ~268M units (declare uses ~101M; headroom for deploy)
+      max_amount: 0x1c000000n, // ~470M units (v2 declare uses ~328M; headroom for deploy)
       max_price_per_unit: priceFri(block.l2_gas_price) * BUFFER,
     },
   };
