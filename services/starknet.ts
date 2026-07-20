@@ -1,9 +1,10 @@
-import { RpcProvider, Account, Contract, Signer, hash, num, constants as starkConstants } from 'starknet';
+import { RpcProvider, Account, Contract, Signer, hash, num } from 'starknet';
 
 // ─── Network configuration ────────────────────────────────────────────────────
 
-// Starknet Sepolia testnet — switch to MAINNET after clinical validation
-export const STARKNET_NETWORK = starkConstants.NetworkName.SN_SEPOLIA;
+// Starknet Sepolia testnet — switch to 'SN_MAIN' after clinical validation.
+// Using a plain string to avoid Metro bundler stripping the starknet constants object.
+export const STARKNET_NETWORK = 'SN_SEPOLIA';
 
 // Public Starknet Sepolia RPC (no API key needed). starknet.js 10.x speaks
 // RPC spec 0.9+, so use the unversioned Cartridge endpoint (currently 0.9.0).
@@ -12,7 +13,7 @@ const SEPOLIA_RPC = 'https://api.cartridge.gg/x/starknet/sepolia';
 // ONA Impact Registry contract on Sepolia.
 // Updated automatically by contracts/scripts/deploy.sh after deployment.
 export const ONA_IMPACT_CONTRACT_ADDRESS =
-  '0x59a9326fa43200b60bd504ae9eee12a404258c65888248e7dbbe954a19aea08';
+  '0x60992a96095dded8c0b44485cf793bff9692e228cb55730f5e92b2351405289';
 
 // Typed ABI for the ImpactRegistry contract — mirrors contracts/src/lib.cairo
 export const IMPACT_REGISTRY_ABI = [

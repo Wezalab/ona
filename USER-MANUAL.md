@@ -36,3 +36,7 @@ ONA is a mobile vision screening app for community health workers. It guides you
 ## Support
 
 For support and questions about ONA, contact WEZA LAB at **wezalab@gmail.com**.
+
+## Local API (development)
+
+When testing against a local ONA API, sign in from **Home → ONA server** with the seeded admin account configured in the API `.env` (see `ona-api` `.env.example`). Do not paste access or refresh tokens into this file.
