@@ -1,9 +1,10 @@
-import { RpcProvider, Account, Contract, Signer, hash, num, constants as starkConstants } from 'starknet';
+import { RpcProvider, Account, Contract, Signer, hash, num } from 'starknet';
 
 // ─── Network configuration ────────────────────────────────────────────────────
 
-// Starknet Sepolia testnet — switch to MAINNET after clinical validation
-export const STARKNET_NETWORK = starkConstants.NetworkName.SN_SEPOLIA;
+// Starknet Sepolia testnet — switch to 'SN_MAIN' after clinical validation.
+// Using a plain string to avoid Metro bundler stripping the starknet constants object.
+export const STARKNET_NETWORK = 'SN_SEPOLIA';
 
 // Public Starknet Sepolia RPC (no API key needed). starknet.js 10.x speaks
 // RPC spec 0.9+, so use the unversioned Cartridge endpoint (currently 0.9.0).
