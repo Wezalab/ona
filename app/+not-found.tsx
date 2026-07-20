@@ -1,47 +1,55 @@
-import { Link } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '@/constants/colors';
-import { t } from '@/constants/translations';
-import { useAppContext } from '@/contexts/AppContext';
+import { Link, Stack } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
+import Colors from "@/constants/colors";
+import { AlertCircle } from "lucide-react-native";
 
 export default function NotFoundScreen() {
-  const insets = useSafeAreaInsets();
-  const { language } = useAppContext();
-
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}>
-      <Text style={styles.title}>{t(language, 'notFound')}</Text>
-      <Text style={styles.subtitle}>{t(language, 'notFoundSubtitle')}</Text>
-      <Link href="/home" style={styles.link}>
-        {t(language, 'backHome')}
-      </Link>
-    </View>
+    <>
+      <Stack.Screen options={{ title: "Page non trouvée" }} />
+      <View style={styles.container}>
+        <AlertCircle size={64} color={Colors.danger} style={styles.icon} />
+        <Text style={styles.title}>Page non trouvée</Text>
+        <Text style={styles.subtitle}>Cette page n&apos;existe pas.</Text>
+        <Link href="/" style={styles.link}>
+          <Text style={styles.linkText}>Retour à l&apos;accueil</Text>
+        </Link>
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 24,
-    backgroundColor: colors.background,
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+    backgroundColor: Colors.background,
+  },
+  icon: {
+    marginBottom: 20,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: colors.text,
+    fontSize: 24,
+    fontWeight: "700",
+    color: Colors.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: colors.text,
-    opacity: 0.7,
+    color: Colors.textSecondary,
     marginBottom: 24,
   },
   link: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+  },
+  linkText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: colors.primary,
+    fontWeight: "600",
+    color: Colors.surface,
   },
 });

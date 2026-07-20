@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
   View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+  TextInput,
+  ActivityIndicator,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '@/constants/colors';
-import { t } from '@/constants/translations';
-import { useAppContext } from '@/contexts/AppContext';
+import { useRouter } from 'expo-router';
+import { ArrowLeft, Server, LogIn, LogOut, RefreshCw, Building2 } from 'lucide-react-native';
+import { useApp } from '@/contexts/AppContext';
 import { useApi } from '@/contexts/ApiContext';
+import Colors from '@/constants/colors';
 
 export default function ApiSettingsScreen() {
-  const { language } = useAppContext();
+  const router = useRouter();
+  const { t } = useApp();
   const {
     ready,
     isAuthenticated,
@@ -31,7 +33,6 @@ export default function ApiSettingsScreen() {
     selectClinic,
     syncNow,
   } = useApi();
-  const insets = useSafeAreaInsets();
 
   const [url, setUrl] = useState(baseUrl);
   const [email, setEmail] = useState('');
@@ -57,170 +58,324 @@ export default function ApiSettingsScreen() {
     }
   };
 
-  if (!ready) {
-    return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <ActivityIndicator color={colors.primary} />
-      </View>
-    );
-  }
-
   return (
-    <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 },
-      ]}
-    >
-      <Text style={styles.title}>{t(language, 'apiSettings')}</Text>
-      <Text style={styles.subtitle}>{t(language, 'apiSettingsSubtitle')}</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <ArrowLeft size={24} color={Colors.surface} />
+          </TouchableOpacity>
+          <Text style={styles.title}>{t.apiSettings.title}</Text>
+          <View style={styles.placeholder} />
+        </View>
 
-      {/* Server URL */}
-      <Text style={styles.label}>{t(language, 'apiServerUrl')}</Text>
-      <TextInput
-        value={url}
-        onChangeText={setUrl}
-        autoCapitalize="none"
-        autoCorrect={false}
-        keyboardType="url"
-        placeholder="https://api.example.com/api"
-        placeholderTextColor={colors.text + '80'}
-        style={styles.input}
-        onBlur={() => run(() => setBaseUrl(url))}
-      />
-
-      {!isAuthenticated ? (
-        <>
-          <Text style={styles.label}>{t(language, 'apiEmail')}</Text>
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="email-address"
-            placeholder="worker@ona.org"
-            placeholderTextColor={colors.text + '80'}
-            style={styles.input}
-          />
-          <Text style={styles.label}>{t(language, 'apiPassword')}</Text>
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholder="••••••••"
-            placeholderTextColor={colors.text + '80'}
-            style={styles.input}
-          />
-          <Pressable
-            style={[styles.button, styles.buttonPrimary]}
-            disabled={busy}
-            onPress={() => run(async () => { await setBaseUrl(url); await login(email, password); })}
-          >
-            <Text style={styles.buttonTextPrimary}>{t(language, 'apiLogin')}</Text>
-          </Pressable>
-        </>
-      ) : (
-        <>
-          <Text style={styles.meta}>
-            {t(language, 'apiLoggedInAs')}: <Text style={styles.metaStrong}>{user?.email}</Text>
-          </Text>
-
-          {/* Clinic selection */}
-          <View style={styles.rowBetween}>
-            <Text style={styles.label}>{t(language, 'apiSelectClinic')}</Text>
-            <Pressable disabled={busy} onPress={() => run(async () => { await loadClinics(); })}>
-              <Text style={styles.link}>{t(language, 'apiLoadClinics')}</Text>
-            </Pressable>
+        {!ready ? (
+          <View style={styles.center}>
+            <ActivityIndicator color={Colors.primary} />
           </View>
-          <Text style={styles.meta}>
-            {t(language, 'apiClinicSelected')}:{' '}
-            <Text style={styles.metaStrong}>
-              {selectedClinic ? `${selectedClinic.name} (#${selectedClinic.code})` : t(language, 'apiNoClinic')}
-            </Text>
-          </Text>
-          {clinics.map((clinic) => (
-            <Pressable
-              key={clinic._id}
-              style={[styles.clinic, selectedClinic?._id === clinic._id && styles.clinicSelected]}
-              onPress={() => run(() => selectClinic(clinic))}
-            >
-              <Text
-                style={[
-                  styles.clinicText,
-                  selectedClinic?._id === clinic._id && styles.clinicTextSelected,
-                ]}
-              >
-                {clinic.name} · #{clinic.code}
-                {clinic.province ? ` · ${clinic.province}` : ''}
-              </Text>
-            </Pressable>
-          ))}
+        ) : (
+          <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+            <Text style={styles.subtitle}>{t.apiSettings.subtitle}</Text>
 
-          {/* Sync */}
-          <Text style={[styles.meta, { marginTop: 20 }]}>
-            {t(language, 'apiPendingSync')}: <Text style={styles.metaStrong}>{pendingCount}</Text>
-          </Text>
-          <Pressable
-            style={[styles.button, styles.buttonPrimary]}
-            disabled={busy}
-            onPress={() => run(async () => { await syncNow(); })}
-          >
-            <Text style={styles.buttonTextPrimary}>{t(language, 'apiSyncNow')}</Text>
-          </Pressable>
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Server size={24} color={Colors.primary} />
+                <Text style={styles.sectionTitle}>{t.apiSettings.serverUrl}</Text>
+              </View>
+              <TextInput
+                value={url}
+                onChangeText={setUrl}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                placeholder="https://api.example.com/api"
+                placeholderTextColor={Colors.textLight}
+                style={styles.input}
+                onBlur={() => run(() => setBaseUrl(url))}
+              />
+            </View>
 
-          <Pressable style={styles.button} disabled={busy} onPress={() => run(logout)}>
-            <Text style={styles.buttonText}>{t(language, 'apiLogout')}</Text>
-          </Pressable>
-        </>
-      )}
+            {!isAuthenticated ? (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <LogIn size={24} color={Colors.info} />
+                  <Text style={styles.sectionTitle}>{t.apiSettings.login}</Text>
+                </View>
+                <Text style={styles.label}>{t.apiSettings.email}</Text>
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  placeholder="worker@ona.org"
+                  placeholderTextColor={Colors.textLight}
+                  style={styles.input}
+                />
+                <Text style={styles.label}>{t.apiSettings.password}</Text>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  placeholder="••••••••"
+                  placeholderTextColor={Colors.textLight}
+                  style={styles.input}
+                />
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  disabled={busy}
+                  activeOpacity={0.8}
+                  onPress={() => run(async () => { await setBaseUrl(url); await login(email, password); })}
+                >
+                  <LogIn size={20} color={Colors.surface} />
+                  <Text style={styles.primaryButtonText}>{t.apiSettings.login}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <View style={styles.section}>
+                  <Text style={styles.meta}>
+                    {t.apiSettings.loggedInAs}: <Text style={styles.metaStrong}>{user?.email}</Text>
+                  </Text>
+                </View>
 
-      {busy ? <ActivityIndicator color={colors.primary} style={{ marginTop: 16 }} /> : null}
-      {message ? <Text style={styles.error}>{message}</Text> : null}
-    </ScrollView>
+                <View style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <Building2 size={24} color={Colors.primary} />
+                    <Text style={styles.sectionTitle}>{t.apiSettings.selectClinic}</Text>
+                  </View>
+                  <Text style={styles.meta}>
+                    {t.apiSettings.clinicSelected}:{' '}
+                    <Text style={styles.metaStrong}>
+                      {selectedClinic
+                        ? `${selectedClinic.name} (#${selectedClinic.code})`
+                        : t.apiSettings.noClinic}
+                    </Text>
+                  </Text>
+                  {clinics.map((clinic) => (
+                    <TouchableOpacity
+                      key={clinic._id}
+                      style={[
+                        styles.clinic,
+                        selectedClinic?._id === clinic._id && styles.clinicSelected,
+                      ]}
+                      activeOpacity={0.7}
+                      onPress={() => run(() => selectClinic(clinic))}
+                    >
+                      <Text
+                        style={[
+                          styles.clinicText,
+                          selectedClinic?._id === clinic._id && styles.clinicTextSelected,
+                        ]}
+                      >
+                        {clinic.name} · #{clinic.code}
+                        {clinic.province ? ` · ${clinic.province}` : ''}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                  <TouchableOpacity
+                    style={styles.secondaryButton}
+                    disabled={busy}
+                    activeOpacity={0.7}
+                    onPress={() => run(async () => { await loadClinics(); })}
+                  >
+                    <RefreshCw size={18} color={Colors.primary} />
+                    <Text style={styles.secondaryButtonText}>{t.apiSettings.loadClinics}</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <RefreshCw size={24} color={Colors.info} />
+                    <Text style={styles.sectionTitle}>{t.apiSettings.pendingSync}</Text>
+                  </View>
+                  <Text style={styles.meta}>
+                    {t.apiSettings.pendingSync}: <Text style={styles.metaStrong}>{pendingCount}</Text>
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.primaryButton}
+                    disabled={busy}
+                    activeOpacity={0.8}
+                    onPress={() => run(async () => { await syncNow(); })}
+                  >
+                    <RefreshCw size={20} color={Colors.surface} />
+                    <Text style={styles.primaryButtonText}>{t.apiSettings.syncNow}</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.dangerButton}
+                  disabled={busy}
+                  activeOpacity={0.7}
+                  onPress={() => run(logout)}
+                >
+                  <LogOut size={20} color={Colors.surface} />
+                  <Text style={styles.dangerButtonText}>{t.apiSettings.logout}</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {busy ? <ActivityIndicator color={Colors.primary} style={{ marginTop: 16 }} /> : null}
+            {message ? <Text style={styles.error}>{message}</Text> : null}
+          </ScrollView>
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  container: { flexGrow: 1, paddingHorizontal: 24, backgroundColor: colors.background },
-  title: { fontSize: 28, fontWeight: '700', color: colors.text, marginBottom: 8 },
-  subtitle: { fontSize: 16, color: colors.text, opacity: 0.7, marginBottom: 24 },
-  label: { fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 6, marginTop: 12 },
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.primary,
+    paddingTop: 20,
+    paddingBottom: 20,
+    paddingHorizontal: 24,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.surface,
+  },
+  placeholder: {
+    width: 40,
+  },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: {
+    flex: 1,
+  },
+  contentContainer: {
+    padding: 24,
+    gap: 28,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: Colors.textSecondary,
+    lineHeight: 21,
+  },
+  section: {
+    gap: 12,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+  },
   input: {
+    backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: Colors.border,
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 16,
-    color: colors.text,
+    color: Colors.text,
   },
-  button: {
+  primaryButton: {
+    flexDirection: 'row',
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.surface,
+  },
+  secondaryButton: {
+    flexDirection: 'row',
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: Colors.primary,
     borderRadius: 12,
     paddingVertical: 14,
-    paddingHorizontal: 16,
     alignItems: 'center',
-    marginTop: 16,
+    justifyContent: 'center',
+    gap: 8,
   },
-  buttonPrimary: { backgroundColor: colors.primary },
-  buttonText: { fontSize: 16, fontWeight: '600', color: colors.primary },
-  buttonTextPrimary: { fontSize: 16, fontWeight: '600', color: colors.background },
-  meta: { fontSize: 14, color: colors.text, marginTop: 12 },
-  metaStrong: { fontWeight: '700' },
-  link: { color: colors.primary, fontWeight: '600' },
-  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+  secondaryButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  dangerButton: {
+    flexDirection: 'row',
+    backgroundColor: Colors.danger,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  dangerButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.surface,
+  },
+  meta: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
+  metaStrong: {
+    fontWeight: '700',
+    color: Colors.text,
+  },
   clinic: {
+    backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: colors.primary + '55',
+    borderColor: Colors.border,
     borderRadius: 10,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 14,
-    marginTop: 8,
   },
-  clinicSelected: { backgroundColor: colors.secondary, borderColor: colors.secondary },
-  clinicText: { fontSize: 15, color: colors.text },
-  clinicTextSelected: { color: colors.background, fontWeight: '600' },
-  error: { color: '#c0392b', marginTop: 16, fontSize: 14 },
+  clinicSelected: {
+    backgroundColor: Colors.primaryLight,
+    borderColor: Colors.primary,
+  },
+  clinicText: {
+    fontSize: 15,
+    color: Colors.text,
+  },
+  clinicTextSelected: {
+    color: Colors.surface,
+    fontWeight: '600',
+  },
+  error: {
+    color: Colors.danger,
+    marginTop: 8,
+    fontSize: 14,
+  },
 });
