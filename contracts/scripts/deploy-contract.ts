@@ -1,0 +1,202 @@
+/**
+ * ONA ImpactRegistry — declare + deploy via starknet.js
+ *
+ * Why this instead of starkli: starkli 0.4.x bundles an older Sierra→CASM
+ * compiler that rejects the Sierra version emitted by recent Scarb (1.9.2+).
+ * starknet.js compiles nothing — it declares the Sierra + CASM that Scarb
+ * already produced — so it stays compatible with the latest Cairo toolchain.
+ *
+ * Prerequisites:
+ *   1. cd contracts && scarb build           (with casm = true in Scarb.toml)
+ *   2. A funded Starknet Sepolia account
+ *
+ * Usage:
+ *   export STARKNET_ACCOUNT_ADDRESS=0x014e9e...        # deployer / contract owner
+ *   export STARKNET_PRIVATE_KEY=0x...                  # never committed or logged
+ *   # optional: export STARKNET_RPC=https://...        # defaults to Cartridge v0.8
+ *   npx tsx contracts/scripts/deploy-contract.ts
+ *
+ * To reveal the private key from a starkli keystore:
+ *   starkli signer keystore inspect-private ~/.starkli-wallets/deployer/keystore.json --raw
+ */
+
+import { readFileSync, writeFileSync } from 'fs';
+import { join, resolve } from 'path';
+import { Account, RpcProvider, Signer, json } from 'starknet';
+
+const CONTRACTS_DIR = resolve(__dirname, '..');
+const REPO_ROOT = resolve(CONTRACTS_DIR, '..');
+const TARGET_DIR = join(CONTRACTS_DIR, 'target', 'dev');
+
+const SIERRA_PATH = join(TARGET_DIR, 'ona_contracts_ImpactRegistry.contract_class.json');
+const CASM_PATH = join(TARGET_DIR, 'ona_contracts_ImpactRegistry.compiled_contract_class.json');
+const SERVICE_PATH = join(REPO_ROOT, 'services', 'starknet.ts');
+
+// starknet.js 10.x speaks RPC spec 0.9+, NOT 0.8. Use an endpoint on 0.9.0
+// (the v0_8-pinned Cartridge URL returns -32603 on estimateFee here).
+const RPC_URL = process.env.STARKNET_RPC ?? 'https://api.cartridge.gg/x/starknet/sepolia';
+const ACCOUNT_ADDRESS = process.env.STARKNET_ACCOUNT_ADDRESS;
+const PRIVATE_KEY = process.env.STARKNET_PRIVATE_KEY;
+
+function requireEnv(): void {
+  const missing: string[] = [];
+  if (!ACCOUNT_ADDRESS) missing.push('STARKNET_ACCOUNT_ADDRESS');
+  if (!PRIVATE_KEY) missing.push('STARKNET_PRIVATE_KEY');
+  if (missing.length > 0) {
+    console.error(`\nMissing required env var(s): ${missing.join(', ')}`);
+    console.error('\nExample:');
+    console.error('  export STARKNET_ACCOUNT_ADDRESS=0x014e9e...');
+    console.error('  export STARKNET_PRIVATE_KEY=$(starkli signer keystore inspect-private \\');
+    console.error('    ~/.starkli-wallets/deployer/keystore.json --raw)');
+    console.error('  npx tsx contracts/scripts/deploy-contract.ts\n');
+    process.exit(1);
+  }
+}
+
+/** Retry a network operation on transient transport errors (fetch failed, resets, timeouts). */
+async function withRetry<T>(label: string, fn: () => Promise<T>, attempts = 4): Promise<T> {
+  let lastErr: unknown;
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      const msg = err instanceof Error ? err.message : String(err);
+      const cause = (err as { cause?: unknown })?.cause;
+      const transient =
+        /fetch failed|ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|socket hang up|network|timeout/i.test(
+          msg + ' ' + String(cause ?? ''),
+        );
+      if (!transient || i === attempts) throw err;
+      const waitMs = 2000 * i;
+      console.log(`  ${label} failed (${msg}) — retry ${i}/${attempts - 1} in ${waitMs / 1000}s...`);
+      await new Promise((r) => setTimeout(r, waitMs));
+    }
+  }
+  throw lastErr;
+}
+
+async function main(): Promise<void> {
+  requireEnv();
+
+  console.log('\n=== ONA ImpactRegistry — declare + deploy (starknet.js) ===\n');
+  console.log(`  RPC     : ${RPC_URL}`);
+  console.log(`  Deployer: ${ACCOUNT_ADDRESS}`);
+
+  const sierra = json.parse(readFileSync(SIERRA_PATH, 'utf8'));
+  const casm = json.parse(readFileSync(CASM_PATH, 'utf8'));
+
+  const provider = new RpcProvider({ nodeUrl: RPC_URL });
+  const signer = new Signer(PRIVATE_KEY as string);
+  const account = new Account({ provider, address: ACCOUNT_ADDRESS as string, signer });
+
+  // ── Manual resource bounds ───────────────────────────────────────────────────
+  // Public RPC nodes currently return "-32603 Internal error" when asked to
+  // estimateFee for a freshly-compiled Sierra class (their simulation VM lags
+  // the sequencer). Supplying explicit resourceBounds makes starknet.js skip
+  // estimation and submit directly — the sequencer executes the class fine.
+  const block = await withRetry('fetch gas prices', () =>
+    provider.getBlockWithTxHashes('latest'),
+  );
+  const priceFri = (p?: { price_in_fri?: string }): bigint =>
+    p?.price_in_fri ? BigInt(p.price_in_fri) : 0n;
+  const BUFFER = 3n; // price headroom for inter-block fluctuation
+
+  // Values MUST be bigint: starknet.js does BigInt arithmetic on them when
+  // hashing the tx (mixing bigint with hex strings throws "Cannot mix BigInt").
+  // It converts bigint -> hex itself for the RPC request.
+  const resourceBounds = {
+    l1_gas: {
+      max_amount: 0x400n, // 1024 units
+      max_price_per_unit: priceFri(block.l1_gas_price) * BUFFER,
+    },
+    l1_data_gas: {
+      max_amount: 0x20000n, // 131072 units
+      max_price_per_unit: priceFri(block.l1_data_gas_price) * BUFFER,
+    },
+    l2_gas: {
+      max_amount: 0x1c000000n, // ~470M units (v2 declare uses ~328M; headroom for deploy)
+      max_price_per_unit: priceFri(block.l2_gas_price) * BUFFER,
+    },
+  };
+
+  const maxFeeFri =
+    resourceBounds.l1_gas.max_amount * resourceBounds.l1_gas.max_price_per_unit +
+    resourceBounds.l1_data_gas.max_amount * resourceBounds.l1_data_gas.max_price_per_unit +
+    resourceBounds.l2_gas.max_amount * resourceBounds.l2_gas.max_price_per_unit;
+  console.log(
+    `  Max fee cap: ~${(Number(maxFeeFri) / 1e18).toFixed(4)} STRK (account must hold at least this)`,
+  );
+
+  // ── 1. Declare (skips if the class is already declared) ──────────────────────
+  console.log('\n→ Declaring contract class...');
+  const declareResponse = await withRetry('declare', () =>
+    account.declareIfNot({ contract: sierra, casm }, { resourceBounds }),
+  );
+  const classHash = declareResponse.class_hash;
+
+  if (declareResponse.transaction_hash) {
+    console.log(`  Declare tx: ${declareResponse.transaction_hash}`);
+    await provider.waitForTransaction(declareResponse.transaction_hash);
+  } else {
+    console.log('  Class already declared — skipping.');
+  }
+  console.log(`  Class hash: ${classHash}`);
+
+  // ── 2. Deploy (constructor: owner = deployer address) ────────────────────────
+  console.log('\n→ Deploying contract...');
+  const deployResponse = await withRetry('deploy', () =>
+    account.deployContract(
+      {
+        classHash,
+        constructorCalldata: [ACCOUNT_ADDRESS as string],
+      },
+      { resourceBounds },
+    ),
+  );
+  console.log(`  Deploy tx: ${deployResponse.transaction_hash}`);
+  await provider.waitForTransaction(deployResponse.transaction_hash);
+
+  const contractAddress = deployResponse.contract_address;
+
+  console.log('\n=== Deployment successful! ===\n');
+  console.log(`  Contract address : ${contractAddress}`);
+  console.log(`  Class hash       : ${classHash}`);
+  console.log(`  Owner            : ${ACCOUNT_ADDRESS}`);
+  console.log(`  Network          : Starknet Sepolia`);
+  console.log(`  Explorer         : https://sepolia.voyager.online/contract/${contractAddress}\n`);
+
+  // ── 3. Patch services/starknet.ts with the live contract address ─────────────
+  try {
+    const service = readFileSync(SERVICE_PATH, 'utf8');
+    const patched = service.replace(
+      /export const ONA_IMPACT_CONTRACT_ADDRESS =\s*'0x[0-9a-fA-F]+';/,
+      `export const ONA_IMPACT_CONTRACT_ADDRESS =\n  '${contractAddress}';`,
+    );
+    if (patched !== service) {
+      writeFileSync(SERVICE_PATH, patched);
+      console.log('→ Updated services/starknet.ts with the deployed contract address.\n');
+    } else {
+      console.log('→ Could not auto-patch services/starknet.ts. Set manually:');
+      console.log(`   export const ONA_IMPACT_CONTRACT_ADDRESS = '${contractAddress}';\n`);
+    }
+  } catch {
+    console.log('→ Set ONA_IMPACT_CONTRACT_ADDRESS manually in services/starknet.ts:');
+    console.log(`   ${contractAddress}\n`);
+  }
+
+  console.log('Next: npm run test:starknet\n');
+}
+
+main().catch((err) => {
+  console.error('\nDeployment failed:', err instanceof Error ? err.message : err);
+  const cause = (err as { cause?: unknown })?.cause;
+  if (cause) console.error('Cause:', cause);
+  console.error(
+    '\nIf this is a transport error (fetch failed), try a different RPC:\n' +
+      '  export STARKNET_RPC=https://starknet-sepolia-rpc.publicnode.com\n' +
+      '  # or: https://starknet-sepolia.drpc.org\n' +
+      'then re-run the deploy.',
+  );
+  process.exit(1);
+});

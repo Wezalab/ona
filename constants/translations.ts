@@ -49,6 +49,10 @@ export interface Translations {
     settingsDesc: string;
     about: string;
     aboutDesc: string;
+    server: string;
+    serverDesc: string;
+    blockchain: string;
+    blockchainDesc: string;
   };
   
   patientInfo: {
@@ -154,6 +158,44 @@ export interface Translations {
     limitationsText: string;
     contact: string;
   };
+
+  apiSettings: {
+    title: string;
+    subtitle: string;
+    serverUrl: string;
+    email: string;
+    password: string;
+    login: string;
+    logout: string;
+    loggedInAs: string;
+    selectClinic: string;
+    loadClinics: string;
+    clinicSelected: string;
+    noClinic: string;
+    pendingSync: string;
+    syncNow: string;
+    loginRequired: string;
+  };
+
+  blockchain: {
+    title: string;
+    subtitle: string;
+    network: string;
+    connecting: string;
+    contract: string;
+    pending: string;
+    anchored: string;
+    onChainTotal: string;
+    privacy: string;
+    proofs: string;
+    empty: string;
+    loadDemo: string;
+    anchorToStarknet: string;
+    anchoring: string;
+    viewOnVoyager: string;
+    refresh: string;
+    backHome: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -206,6 +248,10 @@ export const translations: Record<Language, Translations> = {
       settingsDesc: 'Language, data and settings',
       about: 'About',
       aboutDesc: 'Information and safety warnings',
+      server: 'ONA Server',
+      serverDesc: 'Sign in, choose a clinic and sync data',
+      blockchain: 'Blockchain',
+      blockchainDesc: 'Anonymized impact proofs on Starknet',
     },
     
     patientInfo: {
@@ -311,6 +357,44 @@ export const translations: Record<Language, Translations> = {
       limitationsText: 'Does not detect all eye conditions. Does not replace professional examination. Results are indicative only.',
       contact: 'Contact and Support',
     },
+
+    apiSettings: {
+      title: 'ONA Server',
+      subtitle: 'Connect to the ONA backend to sync screenings',
+      serverUrl: 'Server URL',
+      email: 'Email',
+      password: 'Password',
+      login: 'Sign In',
+      logout: 'Sign Out',
+      loggedInAs: 'Signed in as',
+      selectClinic: 'Select clinic',
+      loadClinics: 'Load clinics',
+      clinicSelected: 'Selected clinic',
+      noClinic: 'None',
+      pendingSync: 'Pending sync',
+      syncNow: 'Sync Now',
+      loginRequired: 'Sign in and select a clinic to sync screenings.',
+    },
+
+    blockchain: {
+      title: 'Blockchain',
+      subtitle: 'Anonymized impact proofs anchored on Starknet',
+      network: 'Network',
+      connecting: 'Connecting…',
+      contract: 'Contract',
+      pending: 'Pending',
+      anchored: 'Anchored',
+      onChainTotal: 'On-chain total',
+      privacy: 'Only anonymized cryptographic proofs are stored on-chain. No patient data ever leaves the device.',
+      proofs: 'Proof queue',
+      empty: 'No proofs yet',
+      loadDemo: 'Load demo proofs',
+      anchorToStarknet: 'Anchor to Starknet',
+      anchoring: 'Anchoring…',
+      viewOnVoyager: 'View on Voyager',
+      refresh: 'Refresh',
+      backHome: 'Back to Home',
+    },
   },
   fr: {
     appName: 'ONA',
@@ -361,6 +445,10 @@ export const translations: Record<Language, Translations> = {
       settingsDesc: 'Langue, données et paramètres',
       about: 'À propos',
       aboutDesc: 'Informations et avertissements de sécurité',
+      server: 'Serveur ONA',
+      serverDesc: 'Se connecter, choisir une clinique et synchroniser',
+      blockchain: 'Blockchain',
+      blockchainDesc: 'Preuves d\'impact anonymisées sur Starknet',
     },
     
     patientInfo: {
@@ -466,6 +554,44 @@ export const translations: Record<Language, Translations> = {
       limitationsText: 'Ne détecte pas toutes les conditions oculaires. Ne remplace pas un examen professionnel. Les résultats sont indicatifs uniquement.',
       contact: 'Contact et Support',
     },
+
+    apiSettings: {
+      title: 'Serveur ONA',
+      subtitle: 'Se connecter au serveur ONA pour synchroniser les dépistages',
+      serverUrl: 'URL du serveur',
+      email: 'E-mail',
+      password: 'Mot de passe',
+      login: 'Se connecter',
+      logout: 'Se déconnecter',
+      loggedInAs: 'Connecté en tant que',
+      selectClinic: 'Choisir une clinique',
+      loadClinics: 'Charger les cliniques',
+      clinicSelected: 'Clinique sélectionnée',
+      noClinic: 'Aucune',
+      pendingSync: 'En attente de synchronisation',
+      syncNow: 'Synchroniser Maintenant',
+      loginRequired: 'Connectez-vous et choisissez une clinique pour synchroniser.',
+    },
+
+    blockchain: {
+      title: 'Blockchain',
+      subtitle: 'Preuves d\'impact anonymisées ancrées sur Starknet',
+      network: 'Réseau',
+      connecting: 'Connexion…',
+      contract: 'Contrat',
+      pending: 'En attente',
+      anchored: 'Ancrées',
+      onChainTotal: 'Total sur la chaîne',
+      privacy: 'Seules des preuves cryptographiques anonymisées sont stockées sur la chaîne. Aucune donnée patient ne quitte l\'appareil.',
+      proofs: 'File de preuves',
+      empty: 'Aucune preuve pour le moment',
+      loadDemo: 'Charger des preuves de démo',
+      anchorToStarknet: 'Ancrer sur Starknet',
+      anchoring: 'Ancrage…',
+      viewOnVoyager: 'Voir sur Voyager',
+      refresh: 'Actualiser',
+      backHome: 'Retour à l\'accueil',
+    },
   },
   
   sw: {
@@ -517,6 +643,10 @@ export const translations: Record<Language, Translations> = {
       settingsDesc: 'Lugha, data na mipangilio',
       about: 'Kuhusu',
       aboutDesc: 'Taarifa na tahadhari za usalama',
+      server: 'Seva ya ONA',
+      serverDesc: 'Ingia, chagua kliniki na sawazisha data',
+      blockchain: 'Blockchain',
+      blockchainDesc: 'Uthibitisho wa athari usiojulikana kwenye Starknet',
     },
     
     patientInfo: {
@@ -622,6 +752,44 @@ export const translations: Record<Language, Translations> = {
       limitationsText: 'Haitambui hali zote za macho. Haichukui nafasi ya uchunguzi wa kitaalamu. Matokeo ni ya mwongozo tu.',
       contact: 'Mawasiliano na Msaada',
     },
+
+    apiSettings: {
+      title: 'Seva ya ONA',
+      subtitle: 'Unganisha kwenye seva ya ONA kusawazisha uchunguzi',
+      serverUrl: 'URL ya seva',
+      email: 'Barua pepe',
+      password: 'Nywila',
+      login: 'Ingia',
+      logout: 'Toka',
+      loggedInAs: 'Umeingia kama',
+      selectClinic: 'Chagua kliniki',
+      loadClinics: 'Pakia kliniki',
+      clinicSelected: 'Kliniki iliyochaguliwa',
+      noClinic: 'Hakuna',
+      pendingSync: 'Inasubiri kusawazishwa',
+      syncNow: 'Sawazisha Sasa',
+      loginRequired: 'Ingia na uchague kliniki ili kusawazisha uchunguzi.',
+    },
+
+    blockchain: {
+      title: 'Blockchain',
+      subtitle: 'Uthibitisho wa athari usiojulikana uliohifadhiwa kwenye Starknet',
+      network: 'Mtandao',
+      connecting: 'Inaunganisha…',
+      contract: 'Mkataba',
+      pending: 'Inasubiri',
+      anchored: 'Imehifadhiwa',
+      onChainTotal: 'Jumla kwenye chain',
+      privacy: 'Uthibitisho wa siri usiojulikana pekee ndio unaohifadhiwa kwenye chain. Hakuna data ya mgonjwa inayotoka kwenye kifaa.',
+      proofs: 'Foleni ya uthibitisho',
+      empty: 'Hakuna uthibitisho bado',
+      loadDemo: 'Pakia uthibitisho wa demo',
+      anchorToStarknet: 'Hifadhi kwenye Starknet',
+      anchoring: 'Inahifadhi…',
+      viewOnVoyager: 'Angalia kwenye Voyager',
+      refresh: 'Onyesha upya',
+      backHome: 'Rudi Nyumbani',
+    },
   },
   
   ln: {
@@ -673,6 +841,10 @@ export const translations: Record<Language, Translations> = {
       settingsDesc: 'Monoko, makambo mpe mabongisi',
       about: 'Na Ntina Ya',
       aboutDesc: 'Sango mpe makebisi ya libateli',
+      server: 'Serveur ONA',
+      serverDesc: 'Kokota, pona kliniki mpe kosala boyokani',
+      blockchain: 'Blockchain',
+      blockchainDesc: 'Bilembo ya bopusi oyo eyebani te na Starknet',
     },
     
     patientInfo: {
@@ -777,6 +949,44 @@ export const translations: Record<Language, Translations> = {
       limitations: 'Bandelo',
       limitationsText: 'Emotaka makambo nionso ya miso te. Ezwi esika ya botalisi ya mayele te. Mbano ezali ya kotatola kaka.',
       contact: 'Boyokani mpe Lisalisi',
+    },
+
+    apiSettings: {
+      title: 'Serveur ONA',
+      subtitle: 'Kokangama na serveur ONA pona kosala boyokani ya botalisi',
+      serverUrl: 'URL ya serveur',
+      email: 'E-mail',
+      password: 'Mombongo',
+      login: 'Kokota',
+      logout: 'Kobima',
+      loggedInAs: 'Okoti lokola',
+      selectClinic: 'Pona kliniki',
+      loadClinics: 'Zwa bakliniki',
+      clinicSelected: 'Kliniki eponami',
+      noClinic: 'Eloko te',
+      pendingSync: 'Ezali kozela boyokani',
+      syncNow: 'Sala Boyokani Sikoyo',
+      loginRequired: 'Kota mpe pona kliniki pona kosala boyokani ya botalisi.',
+    },
+
+    blockchain: {
+      title: 'Blockchain',
+      subtitle: 'Bilembo ya bopusi oyo eyebani te ebombami na Starknet',
+      network: 'Réseau',
+      connecting: 'Ezali kokangama…',
+      contract: 'Kontra',
+      pending: 'Ezali kozela',
+      anchored: 'Ebombami',
+      onChainTotal: 'Motango nionso na chain',
+      privacy: 'Kaka bilembo ya sekele oyo eyebani te ebombami na chain. Ata makambo moko ya mobeli ebimaka na aparey te.',
+      proofs: 'Molongo ya bilembo',
+      empty: 'Elembo naino te',
+      loadDemo: 'Zwa bilembo ya démo',
+      anchorToStarknet: 'Bomba na Starknet',
+      anchoring: 'Ezali kobomba…',
+      viewOnVoyager: 'Tala na Voyager',
+      refresh: 'Zongela',
+      backHome: 'Zonga na Ndako',
     },
   },
 };

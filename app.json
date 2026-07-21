@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "EyeHealth Screen App",
-    "slug": "eyehealth-screen-app",
+    "name": "ONA",
+    "slug": "ona",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "rork-app",
+    "scheme": "ona",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.rork.eyehealth-screen-app",
+      "bundleIdentifier": "org.ona.eyehealth",
       "infoPlist": {
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone"
@@ -26,7 +26,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.eyehealth_screen_app",
+      "package": "org.ona.eyehealth",
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
