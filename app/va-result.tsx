@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } fr
 import { CheckCircle2, AlertCircle, Eye, ArrowRight } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import Colors from '@/constants/colors';
-import React from "react";
+import React, { useEffect } from "react";
 
 export default function VAResultScreen() {
   const router = useRouter();
@@ -11,8 +11,13 @@ export default function VAResultScreen() {
 
   const visualAcuity = currentScreening.visualAcuity;
 
+  useEffect(() => {
+    if (!visualAcuity) {
+      router.replace('/home');
+    }
+  }, [visualAcuity, router]);
+
   if (!visualAcuity) {
-    router.replace('/home');
     return null;
   }
 
