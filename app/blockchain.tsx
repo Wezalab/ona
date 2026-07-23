@@ -1,6 +1,7 @@
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Linking } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Linking, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, RefreshCw, ShieldCheck, ExternalLink } from 'lucide-react-native';
+import { ArrowLeft, RefreshCw, ShieldCheck, ExternalLink, Wallet, Trash2 } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { useStarknet, type ScreeningProof } from '@/hooks/useStarknet';
 import { ONA_IMPACT_CONTRACT_ADDRESS, STARKNET_NETWORK } from '@/services/starknet';
@@ -36,11 +37,46 @@ export default function BlockchainScreen() {
     onChainCount,
     pendingCount,
     anchoredCount,
+    walletAddress,
+    hasWallet,
+    saveWallet,
+    clearWallet,
     refreshNetwork,
     enqueueProof,
     anchorProof,
     voyagerTxUrl,
   } = useStarknet();
+
+  const [addressInput, setAddressInput] = useState('');
+  const [keyInput, setKeyInput] = useState('');
+  const [walletBusy, setWalletBusy] = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
+
+  const handleSaveWallet = async () => {
+    setWalletBusy(true);
+    setWalletError(null);
+    try {
+      await saveWallet(addressInput, keyInput);
+      setAddressInput('');
+      setKeyInput('');
+    } catch (err) {
+      setWalletError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setWalletBusy(false);
+    }
+  };
+
+  const handleClearWallet = async () => {
+    setWalletBusy(true);
+    setWalletError(null);
+    try {
+      await clearWallet();
+    } catch (err) {
+      setWalletError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setWalletBusy(false);
+    }
+  };
 
   const statusLabel = (status: ScreeningProof['status']): string => {
     switch (status) {
@@ -109,6 +145,77 @@ export default function BlockchainScreen() {
                 <Text style={styles.refreshBtnText}>{t.blockchain.refresh}</Text>
               </TouchableOpacity>
             </View>
+          </View>
+
+          {/* Operator wallet */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Wallet size={24} color={Colors.primary} />
+              <Text style={styles.sectionTitle}>{t.blockchain.wallet}</Text>
+            </View>
+
+            <View style={[styles.modeBadge, hasWallet ? styles.modeBadgeLive : styles.modeBadgeSim]}>
+              <View style={[styles.dot, { backgroundColor: hasWallet ? Colors.success : Colors.warning }]} />
+              <Text style={styles.modeBadgeText}>
+                {hasWallet ? t.blockchain.realMode : t.blockchain.simulationMode}
+              </Text>
+            </View>
+
+            {hasWallet ? (
+              <View style={styles.networkCard}>
+                <Text style={styles.walletOkText}>{t.blockchain.walletConfigured}</Text>
+                <Text style={styles.networkDetail}>{truncateHex(walletAddress ?? '', 12)}</Text>
+                <TouchableOpacity
+                  style={styles.clearBtn}
+                  onPress={handleClearWallet}
+                  disabled={walletBusy}
+                  activeOpacity={0.7}
+                >
+                  <Trash2 size={16} color={Colors.danger} />
+                  <Text style={styles.clearBtnText}>{t.blockchain.clearWallet}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.networkCard}>
+                <Text style={styles.walletMissingText}>{t.blockchain.walletMissing}</Text>
+                <Text style={styles.inputLabel}>{t.blockchain.accountAddress}</Text>
+                <TextInput
+                  value={addressInput}
+                  onChangeText={setAddressInput}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholder="0x…"
+                  placeholderTextColor={Colors.textLight}
+                  style={styles.input}
+                />
+                <Text style={styles.inputLabel}>{t.blockchain.privateKey}</Text>
+                <TextInput
+                  value={keyInput}
+                  onChangeText={setKeyInput}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  secureTextEntry
+                  placeholder="0x…"
+                  placeholderTextColor={Colors.textLight}
+                  style={styles.input}
+                />
+                <TouchableOpacity
+                  style={[styles.saveBtn, walletBusy && styles.saveBtnDisabled]}
+                  onPress={handleSaveWallet}
+                  disabled={walletBusy}
+                  activeOpacity={0.8}
+                >
+                  {walletBusy ? (
+                    <ActivityIndicator color={Colors.surface} />
+                  ) : (
+                    <Text style={styles.saveBtnText}>{t.blockchain.saveWallet}</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+
+            <Text style={styles.walletHint}>{t.blockchain.walletHint}</Text>
+            {walletError && <Text style={styles.errorText}>{walletError}</Text>}
           </View>
 
           {/* Impact summary */}
@@ -254,6 +361,54 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   refreshBtnText: { fontSize: 13, color: Colors.primary, fontWeight: '600' },
+  modeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+  },
+  modeBadgeLive: { backgroundColor: Colors.successLight },
+  modeBadgeSim: { backgroundColor: Colors.warningLight },
+  modeBadgeText: { fontSize: 12, fontWeight: '700', color: Colors.text },
+  walletOkText: { fontSize: 14, fontWeight: '600', color: Colors.success },
+  walletMissingText: { fontSize: 13, color: Colors.textSecondary, marginBottom: 4 },
+  inputLabel: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary, marginTop: 4 },
+  input: {
+    backgroundColor: Colors.background,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: Colors.text,
+    fontFamily: 'monospace',
+  },
+  saveBtn: {
+    backgroundColor: Colors.primary,
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  saveBtnDisabled: { opacity: 0.6 },
+  saveBtnText: { color: Colors.surface, fontWeight: '700', fontSize: 14 },
+  clearBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: Colors.danger,
+    borderRadius: 10,
+    paddingVertical: 12,
+    marginTop: 4,
+  },
+  clearBtnText: { color: Colors.danger, fontWeight: '600', fontSize: 14 },
+  walletHint: { fontSize: 12, color: Colors.textLight, lineHeight: 17 },
   statsRow: { flexDirection: 'row', gap: 12 },
   statBox: { flex: 1, backgroundColor: Colors.surfaceElevated, borderRadius: 12, padding: 16, alignItems: 'center' },
   statValue: { fontSize: 30, fontWeight: '700', color: Colors.primary },
