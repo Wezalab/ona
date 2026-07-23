@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Linking, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, RefreshCw, ShieldCheck, ExternalLink, Wallet, Trash2 } from 'lucide-react-native';
+import { ArrowLeft, RefreshCw, ShieldCheck, ExternalLink, Wallet, Trash2, Zap } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { useStarknet, type ScreeningProof } from '@/hooks/useStarknet';
 import { ONA_IMPACT_CONTRACT_ADDRESS, STARKNET_NETWORK } from '@/services/starknet';
@@ -23,7 +23,7 @@ function truncateHex(hex: string, chars = 10): string {
 
 export default function BlockchainScreen() {
   const router = useRouter();
-  const { t } = useApp();
+  const { t, screenings } = useApp();
   const {
     network,
     networkLoading,
@@ -45,6 +45,41 @@ export default function BlockchainScreen() {
   const [keyInput, setKeyInput] = useState('');
   const [walletBusy, setWalletBusy] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
+  const [anchorAllBusy, setAnchorAllBusy] = useState(false);
+
+  // ─── Auto-enqueue: load all local screenings into the proof queue ──────────
+  // proofQueue is in-memory only, so we sync from AsyncStorage-backed screenings
+  // every time this screen mounts (deduped by record.id).
+  const enqueuedIdsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    for (const s of screenings) {
+      if (!enqueuedIdsRef.current.has(s.id)) {
+        enqueuedIdsRef.current.add(s.id);
+        // enqueueProof is async — fires and forgets; status corrects itself
+        void enqueueProof({
+          id: s.id,
+          timestamp: s.timestamp,
+          riskLevel: s.overallRisk,
+          facilityCode: 1,       // default facility (Blue Rock Optic, code 1)
+          isReferral: s.referralNeeded,
+        });
+      }
+    }
+  }, [screenings, enqueueProof]);
+
+  // ─── Anchor all pending proofs in sequence ────────────────────────────────
+  const handleAnchorAll = useCallback(async () => {
+    const pending = proofQueue.filter((p) => p.status === 'pending');
+    if (pending.length === 0) return;
+    setAnchorAllBusy(true);
+    try {
+      for (const p of pending) {
+        await anchorProof(p.record.id);
+      }
+    } finally {
+      setAnchorAllBusy(false);
+    }
+  }, [proofQueue, anchorProof]);
 
   const handleSaveWallet = async () => {
     setWalletBusy(true);
@@ -231,6 +266,23 @@ export default function BlockchainScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{t.blockchain.proofs}</Text>
+              {pendingCount > 0 && (
+                <TouchableOpacity
+                  style={[styles.anchorAllBtn, anchorAllBusy && styles.anchorAllBtnDisabled]}
+                  onPress={handleAnchorAll}
+                  disabled={anchorAllBusy}
+                  activeOpacity={0.8}
+                >
+                  {anchorAllBusy ? (
+                    <ActivityIndicator size="small" color={Colors.surface} />
+                  ) : (
+                    <Zap size={14} color={Colors.surface} />
+                  )}
+                  <Text style={styles.anchorAllBtnText}>
+                    {anchorAllBusy ? t.blockchain.anchoring : `Anchor all (${pendingCount})`}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             {proofQueue.length === 0 ? (
@@ -317,7 +369,7 @@ const styles = StyleSheet.create({
   contentContainer: { padding: 24, gap: 24 },
   subtitle: { fontSize: 15, color: Colors.textSecondary, lineHeight: 21 },
   section: { gap: 12 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, justifyContent: 'space-between' },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: Colors.text },
   networkCard: {
     backgroundColor: Colors.surface,
@@ -447,4 +499,16 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 14, color: Colors.textLight, textAlign: 'center' },
   backHomeBtn: { borderWidth: 1, borderColor: Colors.primary, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   backHomeText: { fontSize: 16, fontWeight: '600', color: Colors.primary },
+  anchorAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginLeft: 'auto',
+  },
+  anchorAllBtnDisabled: { opacity: 0.6 },
+  anchorAllBtnText: { fontSize: 13, fontWeight: '700', color: Colors.surface },
 });
