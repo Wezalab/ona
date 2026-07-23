@@ -64,8 +64,9 @@
         "origin": "https://rork.com/"
       },
       "eas": {
-        "projectId": "c6b7c15c-2d38-487e-9ddf-a7b4b2ec1822"
+        "projectId": "36772483-f88b-419a-8129-01e5aa747cb7"
       }
-    }
+    },
+    "owner": "wezalab"
   }
 }
