@@ -6,6 +6,18 @@ ONA helps detect early signs of vision impairment and preventable blindness in c
 
 Built by [WEZA LAB](https://wezalab.org) in the Democratic Republic of Congo. Open source under [Apache 2.0](./LICENSE).
 
+---
+
+## Ecosystem repositories
+
+| Repository | Description |
+|---|---|
+| **[Wezalab/ona](https://github.com/Wezalab/ona)** ← *you are here* | React Native / Expo mobile app (Android · iOS · Web) |
+| **[Wezalab/ona-api](https://github.com/Wezalab/ona-api)** | NestJS REST API · MongoDB · JWT auth · Starknet ImpactRegistry sync |
+| **[guillainbisimwa/ona-web](https://github.com/guillainbisimwa/ona-web)** | Next.js public impact dashboard · live on-chain data from ImpactRegistry |
+
+> The mobile app works fully standalone (offline-first). The API and web dashboard are optional extensions that add server-side sync and a public-facing impact view.
+
 ### Demo
 
 [![ONA pitch and product overview](https://img.youtube.com/vi/gtX4Hn4JZc0/hqdefault.jpg)](https://www.youtube.com/watch?v=gtX4Hn4JZc0)
@@ -180,6 +192,8 @@ EXPO_PUBLIC_API_BASE_URL=http://10.0.2.2:3002/api   # Android emulator
 ```
 
 ### Deploying a new contract
+
+The Cairo source lives in `contracts/src/` (inside this repo).
 
 ```bash
 cd contracts
