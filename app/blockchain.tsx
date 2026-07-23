@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { ArrowLeft, RefreshCw, ShieldCheck, ExternalLink, Wallet, Trash2, Zap } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { useStarknet, type ScreeningProof } from '@/hooks/useStarknet';
-import { ONA_IMPACT_CONTRACT_ADDRESS, STARKNET_NETWORK } from '@/services/starknet';
+import { ONA_IMPACT_CONTRACT_ADDRESS, STARKNET_NETWORK, voyagerContractUrl } from '@/services/starknet';
 import Colors from '@/constants/colors';
 
 function riskColor(risk: string): string {
@@ -325,11 +325,15 @@ export default function BlockchainScreen() {
                     {proof.status === 'anchoring' && (
                       <Text style={styles.anchoringText}>{t.blockchain.anchoring}</Text>
                     )}
-                    {proof.status === 'anchored' && proof.txHash && (
+                    {proof.status === 'anchored' && (
                       <TouchableOpacity
                         style={styles.explorerBtn}
                         activeOpacity={0.7}
-                        onPress={() => proof.txHash && Linking.openURL(voyagerTxUrl(proof.txHash))}
+                        onPress={() =>
+                          Linking.openURL(
+                            proof.txHash ? voyagerTxUrl(proof.txHash) : voyagerContractUrl(),
+                          )
+                        }
                       >
                         <ExternalLink size={16} color={Colors.primary} />
                         <Text style={styles.explorerBtnText}>{t.blockchain.viewOnVoyager}</Text>
