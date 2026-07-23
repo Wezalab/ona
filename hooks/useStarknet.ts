@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer } from 'react';
 import {
   buildAnchorCalldata,
+  checkProofAnchored,
   fetchNetworkStatus,
   anchorScreeningProof,
   fetchAnchoredCount,
@@ -117,14 +118,28 @@ export function useStarknet() {
 
   /**
    * Queue an anonymized screening record for on-chain anchoring.
-   * Computes the Poseidon proof locally and stages it — no tx is sent yet.
+   * Computes the Poseidon proof locally, checks if it's already anchored,
+   * and stages it as 'anchored' or 'pending' accordingly.
    */
-  const enqueueProof = useCallback((record: ScreeningRecord) => {
+  const enqueueProof = useCallback(async (record: ScreeningRecord) => {
     const { proof, calldata } = buildAnchorCalldata(record);
+    // Optimistically add as pending, then correct the status if already on-chain.
     dispatch({
       type: 'ENQUEUE_PROOF',
       payload: { record, proof, calldata, status: 'pending' },
     });
+    try {
+      const alreadyAnchored = await checkProofAnchored(proof);
+      if (alreadyAnchored) {
+        dispatch({
+          type: 'UPDATE_PROOF',
+          id: record.id,
+          patch: { status: 'anchored', error: 'Already anchored on-chain' },
+        });
+      }
+    } catch {
+      // best-effort — leave as pending if the check fails
+    }
   }, []);
 
   /**
@@ -185,14 +200,27 @@ export function useStarknet() {
           });
         }
       } catch (err) {
-        dispatch({
-          type: 'UPDATE_PROOF',
-          id,
-          patch: {
-            status: 'error',
-            error: err instanceof Error ? err.message : 'Unknown error',
-          },
-        });
+        const msg = err instanceof Error ? err.message : String(err);
+        // Contract already has this proof — treat as success, not error.
+        if (msg.includes('proof already anchored')) {
+          dispatch({
+            type: 'UPDATE_PROOF',
+            id,
+            patch: { status: 'anchored', error: 'Already anchored on-chain' },
+          });
+          fetchAnchoredCount().then((count) => {
+            dispatch({ type: 'SET_ON_CHAIN_COUNT', payload: count });
+          });
+        } else {
+          dispatch({
+            type: 'UPDATE_PROOF',
+            id,
+            patch: {
+              status: 'error',
+              error: msg,
+            },
+          });
+        }
       }
     },
     [state.proofQueue],
