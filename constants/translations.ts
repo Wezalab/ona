@@ -195,6 +195,16 @@ export interface Translations {
     viewOnVoyager: string;
     refresh: string;
     backHome: string;
+    wallet: string;
+    walletConfigured: string;
+    walletMissing: string;
+    walletHint: string;
+    accountAddress: string;
+    privateKey: string;
+    saveWallet: string;
+    clearWallet: string;
+    realMode: string;
+    simulationMode: string;
   };
 }
 
@@ -394,6 +404,16 @@ export const translations: Record<Language, Translations> = {
       viewOnVoyager: 'View on Voyager',
       refresh: 'Refresh',
       backHome: 'Back to Home',
+      wallet: 'Operator wallet',
+      walletConfigured: 'Operator wallet configured',
+      walletMissing: 'No wallet configured — anchoring is simulated',
+      walletHint: 'Stored securely in the device keystore. Used only to sign anchoring transactions; never uploaded.',
+      accountAddress: 'Account address',
+      privateKey: 'Private key',
+      saveWallet: 'Save wallet',
+      clearWallet: 'Clear wallet',
+      realMode: 'Live — real transactions',
+      simulationMode: 'Simulation mode',
     },
   },
   fr: {
@@ -591,9 +611,19 @@ export const translations: Record<Language, Translations> = {
       viewOnVoyager: 'Voir sur Voyager',
       refresh: 'Actualiser',
       backHome: 'Retour à l\'accueil',
+      wallet: 'Portefeuille opérateur',
+      walletConfigured: 'Portefeuille opérateur configuré',
+      walletMissing: 'Aucun portefeuille configuré — l\'ancrage est simulé',
+      walletHint: 'Stocké de façon sécurisée dans le trousseau de l\'appareil. Utilisé uniquement pour signer les transactions d\'ancrage ; jamais transmis.',
+      accountAddress: 'Adresse du compte',
+      privateKey: 'Clé privée',
+      saveWallet: 'Enregistrer le portefeuille',
+      clearWallet: 'Supprimer le portefeuille',
+      realMode: 'En direct — transactions réelles',
+      simulationMode: 'Mode simulation',
     },
   },
-  
+
   sw: {
     appName: 'ONA',
     continue: 'Endelea',
@@ -789,9 +819,19 @@ export const translations: Record<Language, Translations> = {
       viewOnVoyager: 'Angalia kwenye Voyager',
       refresh: 'Onyesha upya',
       backHome: 'Rudi Nyumbani',
+      wallet: 'Pochi ya opereta',
+      walletConfigured: 'Pochi ya opereta imewekwa',
+      walletMissing: 'Hakuna pochi iliyowekwa — uhifadhi unaigwa',
+      walletHint: 'Imehifadhiwa kwa usalama kwenye kifaa. Inatumika tu kutia saini miamala ya uhifadhi; haipakiwi kamwe.',
+      accountAddress: 'Anwani ya akaunti',
+      privateKey: 'Ufunguo wa siri',
+      saveWallet: 'Hifadhi pochi',
+      clearWallet: 'Futa pochi',
+      realMode: 'Moja kwa moja — miamala halisi',
+      simulationMode: 'Hali ya kuiga',
     },
   },
-  
+
   ln: {
     appName: 'ONA',
     continue: 'Koba',
@@ -987,6 +1027,16 @@ export const translations: Record<Language, Translations> = {
       viewOnVoyager: 'Tala na Voyager',
       refresh: 'Zongela',
       backHome: 'Zonga na Ndako',
+      wallet: 'Portefeuille ya opérateur',
+      walletConfigured: 'Portefeuille ya opérateur esili kotiama',
+      walletMissing: 'Portefeuille ezali te — kobomba ezali kaka simulation',
+      walletHint: 'Ebombami na kobatela na aparey. Esalelaka kaka mpo na kotia signature na ba transactions ya kobomba; etindamaka soki moke te.',
+      accountAddress: 'Adresi ya compte',
+      privateKey: 'Fungola ya sekele',
+      saveWallet: 'Bomba portefeuille',
+      clearWallet: 'Longola portefeuille',
+      realMode: 'Na bomoi — ba transactions ya solo',
+      simulationMode: 'Mode simulation',
     },
   },
 };

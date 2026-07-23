@@ -7,30 +7,55 @@ import { RpcProvider, Account, Contract, Signer, hash, num } from 'starknet';
 export const STARKNET_NETWORK = 'SN_SEPOLIA';
 
 // Public Starknet Sepolia RPC (no API key needed). starknet.js 10.x speaks
-// RPC spec 0.9+, so use the unversioned Cartridge endpoint (currently 0.9.0).
-const SEPOLIA_RPC = 'https://api.cartridge.gg/x/starknet/sepolia';
+// RPC spec 0.9+. Publicnode is primary (Cartridge fails on estimateFee);
+// Cartridge used as read-only fallback.
+const SEPOLIA_RPC =
+  process.env.EXPO_PUBLIC_STARKNET_RPC ??
+  'https://starknet-sepolia-rpc.publicnode.com';
 
 // ONA Impact Registry contract on Sepolia.
 // Updated automatically by contracts/scripts/deploy.sh after deployment.
 export const ONA_IMPACT_CONTRACT_ADDRESS =
-  '0x60992a96095dded8c0b44485cf793bff9692e228cb55730f5e92b2351405289';
+  '0x437335ac6168b6114bbdff68abdf6334f9a14e3a597c7ce8d8cc5f48d79aa6a';
 
-// Typed ABI for the ImpactRegistry contract — mirrors contracts/src/lib.cairo
+// Typed ABI for the ImpactRegistry v2 contract — mirrors contracts/src/lib.cairo
 export const IMPACT_REGISTRY_ABI = [
+  // ── Write (owner only) ────────────────────────────────────────────────────
   {
     type: 'function',
-    name: 'anchor_screening_proof',
+    name: 'anchor_screening',
     inputs: [
       { name: 'proof', type: 'core::felt252' },
       { name: 'timestamp', type: 'core::integer::u64' },
       { name: 'risk_level', type: 'core::integer::u8' },
+      { name: 'facility_code', type: 'core::integer::u32' },
+      { name: 'is_referral', type: 'core::bool' },
     ],
     outputs: [],
     state_mutability: 'external',
   },
   {
     type: 'function',
+    name: 'register_facility',
+    inputs: [
+      { name: 'code', type: 'core::integer::u32' },
+      { name: 'name', type: 'core::felt252' },
+    ],
+    outputs: [],
+    state_mutability: 'external',
+  },
+  // ── Read ─────────────────────────────────────────────────────────────────
+  {
+    // Backward-compatible alias of get_total_screenings
+    type: 'function',
     name: 'get_anchored_count',
+    inputs: [],
+    outputs: [{ type: 'core::integer::u64' }],
+    state_mutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'get_total_screenings',
     inputs: [],
     outputs: [{ type: 'core::integer::u64' }],
     state_mutability: 'view',
@@ -49,15 +74,27 @@ export const IMPACT_REGISTRY_ABI = [
     outputs: [{ type: 'core::starknet::contract_address::ContractAddress' }],
     state_mutability: 'view',
   },
+  // ── Events ────────────────────────────────────────────────────────────────
   {
     type: 'event',
-    name: 'ona_contracts::ImpactRegistry::ScreeningProofAnchored',
+    name: 'ona_contracts::ImpactRegistry::ScreeningAnchored',
     kind: 'struct',
     members: [
       { name: 'proof', type: 'core::felt252', kind: 'key' },
       { name: 'timestamp', type: 'core::integer::u64', kind: 'data' },
       { name: 'risk_level', type: 'core::integer::u8', kind: 'data' },
+      { name: 'facility_code', type: 'core::integer::u32', kind: 'data' },
+      { name: 'is_referral', type: 'core::bool', kind: 'data' },
       { name: 'anchored_at', type: 'core::integer::u64', kind: 'data' },
+    ],
+  },
+  {
+    type: 'event',
+    name: 'ona_contracts::ImpactRegistry::FacilityRegistered',
+    kind: 'struct',
+    members: [
+      { name: 'code', type: 'core::integer::u32', kind: 'key' },
+      { name: 'name', type: 'core::felt252', kind: 'data' },
     ],
   },
   {
@@ -65,36 +102,19 @@ export const IMPACT_REGISTRY_ABI = [
     name: 'ona_contracts::ImpactRegistry::OwnershipTransferred',
     kind: 'struct',
     members: [
-      {
-        name: 'previous_owner',
-        type: 'core::starknet::contract_address::ContractAddress',
-        kind: 'data',
-      },
-      {
-        name: 'new_owner',
-        type: 'core::starknet::contract_address::ContractAddress',
-        kind: 'data',
-      },
+      { name: 'previous_owner', type: 'core::starknet::contract_address::ContractAddress', kind: 'data' },
+      { name: 'new_owner', type: 'core::starknet::contract_address::ContractAddress', kind: 'data' },
     ],
   },
   {
-    // Top-level Event enum — starknet.js requires this to be present alongside
-    // the event structs, otherwise Contract construction throws
-    // "inconsistency in ABI events definition."
+    // Top-level Event enum — starknet.js requires this alongside event structs.
     type: 'event',
     name: 'ona_contracts::ImpactRegistry::Event',
     kind: 'enum',
     variants: [
-      {
-        name: 'ScreeningProofAnchored',
-        type: 'ona_contracts::ImpactRegistry::ScreeningProofAnchored',
-        kind: 'nested',
-      },
-      {
-        name: 'OwnershipTransferred',
-        type: 'ona_contracts::ImpactRegistry::OwnershipTransferred',
-        kind: 'nested',
-      },
+      { name: 'ScreeningAnchored', type: 'ona_contracts::ImpactRegistry::ScreeningAnchored', kind: 'nested' },
+      { name: 'FacilityRegistered', type: 'ona_contracts::ImpactRegistry::FacilityRegistered', kind: 'nested' },
+      { name: 'OwnershipTransferred', type: 'ona_contracts::ImpactRegistry::OwnershipTransferred', kind: 'nested' },
     ],
   },
 ] as const;
@@ -185,6 +205,7 @@ export type ScreeningRecord = {
   timestamp: number;
   riskLevel: RiskLevel;
   facilityCode: number;
+  isReferral: boolean;
 };
 
 export const RISK_CODE: Record<RiskLevel, number> = { low: 1, medium: 2, high: 3 };
@@ -203,8 +224,11 @@ export function computeScreeningProof(record: ScreeningRecord): string {
 }
 
 /**
- * Build the Starknet calldata for the `anchor_screening_proof` entry point.
+ * Build the Starknet calldata for the `anchor_screening` entry point (v2).
  * Returns the hex-encoded proof and the calldata array ready for submission.
+ *
+ * Calldata order mirrors the Cairo function signature:
+ *   anchor_screening(proof, timestamp, risk_level, facility_code, is_referral)
  */
 export function buildAnchorCalldata(record: ScreeningRecord): {
   proof: string;
@@ -213,7 +237,13 @@ export function buildAnchorCalldata(record: ScreeningRecord): {
   const proof = computeScreeningProof(record);
   return {
     proof,
-    calldata: [proof, num.toHex(record.timestamp), num.toHex(RISK_CODE[record.riskLevel])],
+    calldata: [
+      proof,
+      num.toHex(record.timestamp),
+      num.toHex(RISK_CODE[record.riskLevel]),
+      num.toHex(record.facilityCode),
+      record.isReferral ? '0x1' : '0x0',
+    ],
   };
 }
 
@@ -228,12 +258,13 @@ export type AnchorParams = {
 };
 
 /**
- * Submit a screening proof to the deployed ImpactRegistry contract.
+ * Submit a screening proof to the deployed ImpactRegistry v2 contract.
  *
  * Prerequisites:
- *   1. ONA_IMPACT_CONTRACT_ADDRESS must be set to the deployed contract
- *   2. walletAddress + privateKey must belong to a funded Starknet Sepolia account
- *      that is the contract owner (set during deployment)
+ *   1. ONA_IMPACT_CONTRACT_ADDRESS must point to the deployed v2 contract
+ *   2. walletAddress + privateKey must belong to the funded Starknet Sepolia
+ *      account that is the contract owner (set during deployment)
+ *   3. The facility (record.facilityCode) must be registered on-chain first
  *
  * Returns the transaction hash on success.
  */
@@ -247,13 +278,29 @@ export async function anchorScreeningProof(params: AnchorParams): Promise<string
   const provider = getProvider();
   const signer = new Signer(privateKey);
   const account = new Account({ provider, address: walletAddress, signer });
-  const { proof } = buildAnchorCalldata(record);
+  const { calldata } = buildAnchorCalldata(record);
 
-  const { transaction_hash } = await account.execute({
-    contractAddress: ONA_IMPACT_CONTRACT_ADDRESS,
-    entrypoint: 'anchor_screening_proof',
-    calldata: [proof, num.toHex(record.timestamp), num.toHex(RISK_CODE[record.riskLevel])],
-  });
+  // Manual resource bounds — public RPC nodes (Cartridge in particular) return
+  // -32603 on estimateFee for invoke calls; setting explicit bounds skips
+  // estimation and submits directly. Values are generous but not wasteful.
+  const block = await provider.getBlockWithTxHashes('latest');
+  const fri = (p?: { price_in_fri?: string }): bigint =>
+    p?.price_in_fri ? BigInt(p.price_in_fri) : 1n;
+  const B = 4n; // 4× current gas price for headroom
+  const resourceBounds = {
+    l1_gas:      { max_amount: 0x400n,     max_price_per_unit: fri((block as { l1_gas_price?: { price_in_fri?: string } }).l1_gas_price)      * B },
+    l1_data_gas: { max_amount: 0x20000n,   max_price_per_unit: fri((block as { l1_data_gas_price?: { price_in_fri?: string } }).l1_data_gas_price) * B },
+    l2_gas:      { max_amount: 0x1000000n, max_price_per_unit: fri((block as { l2_gas_price?: { price_in_fri?: string } }).l2_gas_price)      * B },
+  };
+
+  const { transaction_hash } = await account.execute(
+    {
+      contractAddress: ONA_IMPACT_CONTRACT_ADDRESS,
+      entrypoint: 'anchor_screening',
+      calldata,
+    },
+    { resourceBounds },
+  );
 
   // Wait for transaction to be accepted on L2
   await provider.waitForTransaction(transaction_hash);

@@ -1,16 +1,11 @@
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Linking } from 'react-native';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Linking, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, RefreshCw, ShieldCheck, ExternalLink } from 'lucide-react-native';
+import { ArrowLeft, RefreshCw, ShieldCheck, ExternalLink, Wallet, Trash2, Zap } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { useStarknet, type ScreeningProof } from '@/hooks/useStarknet';
-import { ONA_IMPACT_CONTRACT_ADDRESS, STARKNET_NETWORK } from '@/services/starknet';
+import { ONA_IMPACT_CONTRACT_ADDRESS, STARKNET_NETWORK, voyagerContractUrl } from '@/services/starknet';
 import Colors from '@/constants/colors';
-
-const DEMO_RECORDS = [
-  { id: 'demo-1', timestamp: Date.now() - 86400000 * 2, riskLevel: 'low' as const, facilityCode: 1 },
-  { id: 'demo-2', timestamp: Date.now() - 86400000, riskLevel: 'medium' as const, facilityCode: 1 },
-  { id: 'demo-3', timestamp: Date.now() - 3600000, riskLevel: 'high' as const, facilityCode: 2 },
-];
 
 function riskColor(risk: string): string {
   switch (risk) {
@@ -28,7 +23,7 @@ function truncateHex(hex: string, chars = 10): string {
 
 export default function BlockchainScreen() {
   const router = useRouter();
-  const { t } = useApp();
+  const { t, screenings } = useApp();
   const {
     network,
     networkLoading,
@@ -36,11 +31,81 @@ export default function BlockchainScreen() {
     onChainCount,
     pendingCount,
     anchoredCount,
+    walletAddress,
+    hasWallet,
+    saveWallet,
+    clearWallet,
     refreshNetwork,
     enqueueProof,
     anchorProof,
     voyagerTxUrl,
   } = useStarknet();
+
+  const [addressInput, setAddressInput] = useState('');
+  const [keyInput, setKeyInput] = useState('');
+  const [walletBusy, setWalletBusy] = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
+  const [anchorAllBusy, setAnchorAllBusy] = useState(false);
+
+  // ─── Auto-enqueue: load all local screenings into the proof queue ──────────
+  // proofQueue is in-memory only, so we sync from AsyncStorage-backed screenings
+  // every time this screen mounts (deduped by record.id).
+  const enqueuedIdsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    for (const s of screenings) {
+      if (!enqueuedIdsRef.current.has(s.id)) {
+        enqueuedIdsRef.current.add(s.id);
+        // enqueueProof is async — fires and forgets; status corrects itself
+        void enqueueProof({
+          id: s.id,
+          timestamp: s.timestamp,
+          riskLevel: s.overallRisk,
+          facilityCode: 1,       // default facility (Blue Rock Optic, code 1)
+          isReferral: s.referralNeeded,
+        });
+      }
+    }
+  }, [screenings, enqueueProof]);
+
+  // ─── Anchor all pending proofs in sequence ────────────────────────────────
+  const handleAnchorAll = useCallback(async () => {
+    const pending = proofQueue.filter((p) => p.status === 'pending');
+    if (pending.length === 0) return;
+    setAnchorAllBusy(true);
+    try {
+      for (const p of pending) {
+        await anchorProof(p.record.id);
+      }
+    } finally {
+      setAnchorAllBusy(false);
+    }
+  }, [proofQueue, anchorProof]);
+
+  const handleSaveWallet = async () => {
+    setWalletBusy(true);
+    setWalletError(null);
+    try {
+      await saveWallet(addressInput, keyInput);
+      setAddressInput('');
+      setKeyInput('');
+    } catch (err) {
+      setWalletError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setWalletBusy(false);
+    }
+  };
+
+  const handleClearWallet = async () => {
+    setWalletBusy(true);
+    setWalletError(null);
+    try {
+      await clearWallet();
+    } catch (err) {
+      setWalletError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setWalletBusy(false);
+    }
+  };
 
   const statusLabel = (status: ScreeningProof['status']): string => {
     switch (status) {
@@ -61,14 +126,6 @@ export default function BlockchainScreen() {
       default: return { backgroundColor: Colors.surfaceElevated };
     }
   };
-
-  function loadDemoProofs() {
-    for (const record of DEMO_RECORDS) {
-      if (!proofQueue.some((p) => p.record.id === record.id)) {
-        enqueueProof(record);
-      }
-    }
-  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -111,6 +168,77 @@ export default function BlockchainScreen() {
             </View>
           </View>
 
+          {/* Operator wallet */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Wallet size={24} color={Colors.primary} />
+              <Text style={styles.sectionTitle}>{t.blockchain.wallet}</Text>
+            </View>
+
+            <View style={[styles.modeBadge, hasWallet ? styles.modeBadgeLive : styles.modeBadgeSim]}>
+              <View style={[styles.dot, { backgroundColor: hasWallet ? Colors.success : Colors.warning }]} />
+              <Text style={styles.modeBadgeText}>
+                {hasWallet ? t.blockchain.realMode : t.blockchain.simulationMode}
+              </Text>
+            </View>
+
+            {hasWallet ? (
+              <View style={styles.networkCard}>
+                <Text style={styles.walletOkText}>{t.blockchain.walletConfigured}</Text>
+                <Text style={styles.networkDetail}>{truncateHex(walletAddress ?? '', 12)}</Text>
+                <TouchableOpacity
+                  style={styles.clearBtn}
+                  onPress={handleClearWallet}
+                  disabled={walletBusy}
+                  activeOpacity={0.7}
+                >
+                  <Trash2 size={16} color={Colors.danger} />
+                  <Text style={styles.clearBtnText}>{t.blockchain.clearWallet}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.networkCard}>
+                <Text style={styles.walletMissingText}>{t.blockchain.walletMissing}</Text>
+                <Text style={styles.inputLabel}>{t.blockchain.accountAddress}</Text>
+                <TextInput
+                  value={addressInput}
+                  onChangeText={setAddressInput}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholder="0x…"
+                  placeholderTextColor={Colors.textLight}
+                  style={styles.input}
+                />
+                <Text style={styles.inputLabel}>{t.blockchain.privateKey}</Text>
+                <TextInput
+                  value={keyInput}
+                  onChangeText={setKeyInput}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  secureTextEntry
+                  placeholder="0x…"
+                  placeholderTextColor={Colors.textLight}
+                  style={styles.input}
+                />
+                <TouchableOpacity
+                  style={[styles.saveBtn, walletBusy && styles.saveBtnDisabled]}
+                  onPress={handleSaveWallet}
+                  disabled={walletBusy}
+                  activeOpacity={0.8}
+                >
+                  {walletBusy ? (
+                    <ActivityIndicator color={Colors.surface} />
+                  ) : (
+                    <Text style={styles.saveBtnText}>{t.blockchain.saveWallet}</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+
+            <Text style={styles.walletHint}>{t.blockchain.walletHint}</Text>
+            {walletError && <Text style={styles.errorText}>{walletError}</Text>}
+          </View>
+
           {/* Impact summary */}
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
@@ -138,14 +266,28 @@ export default function BlockchainScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{t.blockchain.proofs}</Text>
+              {pendingCount > 0 && (
+                <TouchableOpacity
+                  style={[styles.anchorAllBtn, anchorAllBusy && styles.anchorAllBtnDisabled]}
+                  onPress={handleAnchorAll}
+                  disabled={anchorAllBusy}
+                  activeOpacity={0.8}
+                >
+                  {anchorAllBusy ? (
+                    <ActivityIndicator size="small" color={Colors.surface} />
+                  ) : (
+                    <Zap size={14} color={Colors.surface} />
+                  )}
+                  <Text style={styles.anchorAllBtnText}>
+                    {anchorAllBusy ? t.blockchain.anchoring : `Anchor all (${pendingCount})`}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             {proofQueue.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyText}>{t.blockchain.empty}</Text>
-                <TouchableOpacity style={styles.demoBtn} onPress={loadDemoProofs} activeOpacity={0.7}>
-                  <Text style={styles.demoBtnText}>{t.blockchain.loadDemo}</Text>
-                </TouchableOpacity>
               </View>
             ) : (
               proofQueue.map((proof) => (
@@ -183,11 +325,15 @@ export default function BlockchainScreen() {
                     {proof.status === 'anchoring' && (
                       <Text style={styles.anchoringText}>{t.blockchain.anchoring}</Text>
                     )}
-                    {proof.status === 'anchored' && proof.txHash && (
+                    {proof.status === 'anchored' && (
                       <TouchableOpacity
                         style={styles.explorerBtn}
                         activeOpacity={0.7}
-                        onPress={() => proof.txHash && Linking.openURL(voyagerTxUrl(proof.txHash))}
+                        onPress={() =>
+                          Linking.openURL(
+                            proof.txHash ? voyagerTxUrl(proof.txHash) : voyagerContractUrl(),
+                          )
+                        }
                       >
                         <ExternalLink size={16} color={Colors.primary} />
                         <Text style={styles.explorerBtnText}>{t.blockchain.viewOnVoyager}</Text>
@@ -227,7 +373,7 @@ const styles = StyleSheet.create({
   contentContainer: { padding: 24, gap: 24 },
   subtitle: { fontSize: 15, color: Colors.textSecondary, lineHeight: 21 },
   section: { gap: 12 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, justifyContent: 'space-between' },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: Colors.text },
   networkCard: {
     backgroundColor: Colors.surface,
@@ -254,6 +400,54 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   refreshBtnText: { fontSize: 13, color: Colors.primary, fontWeight: '600' },
+  modeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+  },
+  modeBadgeLive: { backgroundColor: Colors.successLight },
+  modeBadgeSim: { backgroundColor: Colors.warningLight },
+  modeBadgeText: { fontSize: 12, fontWeight: '700', color: Colors.text },
+  walletOkText: { fontSize: 14, fontWeight: '600', color: Colors.success },
+  walletMissingText: { fontSize: 13, color: Colors.textSecondary, marginBottom: 4 },
+  inputLabel: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary, marginTop: 4 },
+  input: {
+    backgroundColor: Colors.background,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: Colors.text,
+    fontFamily: 'monospace',
+  },
+  saveBtn: {
+    backgroundColor: Colors.primary,
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  saveBtnDisabled: { opacity: 0.6 },
+  saveBtnText: { color: Colors.surface, fontWeight: '700', fontSize: 14 },
+  clearBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: Colors.danger,
+    borderRadius: 10,
+    paddingVertical: 12,
+    marginTop: 4,
+  },
+  clearBtnText: { color: Colors.danger, fontWeight: '600', fontSize: 14 },
+  walletHint: { fontSize: 12, color: Colors.textLight, lineHeight: 17 },
   statsRow: { flexDirection: 'row', gap: 12 },
   statBox: { flex: 1, backgroundColor: Colors.surfaceElevated, borderRadius: 12, padding: 16, alignItems: 'center' },
   statValue: { fontSize: 30, fontWeight: '700', color: Colors.primary },
@@ -307,8 +501,18 @@ const styles = StyleSheet.create({
   explorerBtnText: { color: Colors.primary, fontWeight: '600', fontSize: 14 },
   emptyState: { alignItems: 'center', paddingVertical: 32, gap: 16 },
   emptyText: { fontSize: 14, color: Colors.textLight, textAlign: 'center' },
-  demoBtn: { borderWidth: 1, borderColor: Colors.primary, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 20 },
-  demoBtnText: { color: Colors.primary, fontWeight: '600', fontSize: 14 },
   backHomeBtn: { borderWidth: 1, borderColor: Colors.primary, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   backHomeText: { fontSize: 16, fontWeight: '600', color: Colors.primary },
+  anchorAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginLeft: 'auto',
+  },
+  anchorAllBtnDisabled: { opacity: 0.6 },
+  anchorAllBtnText: { fontSize: 13, fontWeight: '700', color: Colors.surface },
 });

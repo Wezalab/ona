@@ -12,6 +12,7 @@ import {
 import { CheckCircle2, AlertTriangle, AlertCircle, Save, CloudUpload } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { useApi } from '@/contexts/ApiContext';
+import { useStarknet } from '@/hooks/useStarknet';
 import type { Sex } from '@/types/api';
 import Colors from '@/constants/colors';
 import React, { useState } from "react";
@@ -22,6 +23,7 @@ export default function ScreeningResultsScreen() {
   const router = useRouter();
   const { t, currentScreening, saveScreening } = useApp();
   const { isAuthenticated, selectedClinic, submitScreening } = useApi();
+  const { enqueueProof } = useStarknet();
 
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const [message, setMessage] = useState<string | null>(null);
@@ -111,6 +113,20 @@ export default function ScreeningResultsScreen() {
       await saveScreening();
     } catch (error) {
       console.error('Error saving screening:', error);
+    }
+
+    // Queue the anonymized proof in the Blockchain screen so the operator can
+    // track it and optionally anchor directly. This is fire-and-forget; the
+    // backend will also anchor automatically when the screening syncs.
+    if (selectedClinic) {
+      const isReferral = overallRisk !== 'low';
+      enqueueProof({
+        id: `scr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        timestamp: Math.floor(Date.now() / 1000),
+        riskLevel: overallRisk,
+        facilityCode: selectedClinic.code,
+        isReferral,
+      });
     }
 
     // Best-effort offline-first submit to the ONA backend when connected.
