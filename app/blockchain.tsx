@@ -7,12 +7,6 @@ import { useStarknet, type ScreeningProof } from '@/hooks/useStarknet';
 import { ONA_IMPACT_CONTRACT_ADDRESS, STARKNET_NETWORK } from '@/services/starknet';
 import Colors from '@/constants/colors';
 
-const DEMO_RECORDS = [
-  { id: 'demo-1', timestamp: Date.now() - 86400000 * 2, riskLevel: 'low' as const, facilityCode: 1 },
-  { id: 'demo-2', timestamp: Date.now() - 86400000, riskLevel: 'medium' as const, facilityCode: 1 },
-  { id: 'demo-3', timestamp: Date.now() - 3600000, riskLevel: 'high' as const, facilityCode: 2 },
-];
-
 function riskColor(risk: string): string {
   switch (risk) {
     case 'low': return Colors.success;
@@ -97,14 +91,6 @@ export default function BlockchainScreen() {
       default: return { backgroundColor: Colors.surfaceElevated };
     }
   };
-
-  function loadDemoProofs() {
-    for (const record of DEMO_RECORDS) {
-      if (!proofQueue.some((p) => p.record.id === record.id)) {
-        enqueueProof(record);
-      }
-    }
-  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -250,9 +236,6 @@ export default function BlockchainScreen() {
             {proofQueue.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyText}>{t.blockchain.empty}</Text>
-                <TouchableOpacity style={styles.demoBtn} onPress={loadDemoProofs} activeOpacity={0.7}>
-                  <Text style={styles.demoBtnText}>{t.blockchain.loadDemo}</Text>
-                </TouchableOpacity>
               </View>
             ) : (
               proofQueue.map((proof) => (
@@ -462,8 +445,6 @@ const styles = StyleSheet.create({
   explorerBtnText: { color: Colors.primary, fontWeight: '600', fontSize: 14 },
   emptyState: { alignItems: 'center', paddingVertical: 32, gap: 16 },
   emptyText: { fontSize: 14, color: Colors.textLight, textAlign: 'center' },
-  demoBtn: { borderWidth: 1, borderColor: Colors.primary, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 20 },
-  demoBtnText: { color: Colors.primary, fontWeight: '600', fontSize: 14 },
   backHomeBtn: { borderWidth: 1, borderColor: Colors.primary, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   backHomeText: { fontSize: 16, fontWeight: '600', color: Colors.primary },
 });
