@@ -7,13 +7,16 @@ import { RpcProvider, Account, Contract, Signer, hash, num } from 'starknet';
 export const STARKNET_NETWORK = 'SN_SEPOLIA';
 
 // Public Starknet Sepolia RPC (no API key needed). starknet.js 10.x speaks
-// RPC spec 0.9+, so use the unversioned Cartridge endpoint (currently 0.9.0).
-const SEPOLIA_RPC = 'https://api.cartridge.gg/x/starknet/sepolia';
+// RPC spec 0.9+. Publicnode is primary (Cartridge fails on estimateFee);
+// Cartridge used as read-only fallback.
+const SEPOLIA_RPC =
+  process.env.EXPO_PUBLIC_STARKNET_RPC ??
+  'https://starknet-sepolia-rpc.publicnode.com';
 
 // ONA Impact Registry contract on Sepolia.
 // Updated automatically by contracts/scripts/deploy.sh after deployment.
 export const ONA_IMPACT_CONTRACT_ADDRESS =
-  '0x60992a96095dded8c0b44485cf793bff9692e228cb55730f5e92b2351405289';
+  '0x437335ac6168b6114bbdff68abdf6334f9a14e3a597c7ce8d8cc5f48d79aa6a';
 
 // Typed ABI for the ImpactRegistry v2 contract — mirrors contracts/src/lib.cairo
 export const IMPACT_REGISTRY_ABI = [
@@ -277,11 +280,27 @@ export async function anchorScreeningProof(params: AnchorParams): Promise<string
   const account = new Account({ provider, address: walletAddress, signer });
   const { calldata } = buildAnchorCalldata(record);
 
-  const { transaction_hash } = await account.execute({
-    contractAddress: ONA_IMPACT_CONTRACT_ADDRESS,
-    entrypoint: 'anchor_screening',
-    calldata,
-  });
+  // Manual resource bounds — public RPC nodes (Cartridge in particular) return
+  // -32603 on estimateFee for invoke calls; setting explicit bounds skips
+  // estimation and submits directly. Values are generous but not wasteful.
+  const block = await provider.getBlockWithTxHashes('latest');
+  const fri = (p?: { price_in_fri?: string }): bigint =>
+    p?.price_in_fri ? BigInt(p.price_in_fri) : 1n;
+  const B = 4n; // 4× current gas price for headroom
+  const resourceBounds = {
+    l1_gas:      { max_amount: 0x400n,     max_price_per_unit: fri((block as { l1_gas_price?: { price_in_fri?: string } }).l1_gas_price)      * B },
+    l1_data_gas: { max_amount: 0x20000n,   max_price_per_unit: fri((block as { l1_data_gas_price?: { price_in_fri?: string } }).l1_data_gas_price) * B },
+    l2_gas:      { max_amount: 0x1000000n, max_price_per_unit: fri((block as { l2_gas_price?: { price_in_fri?: string } }).l2_gas_price)      * B },
+  };
+
+  const { transaction_hash } = await account.execute(
+    {
+      contractAddress: ONA_IMPACT_CONTRACT_ADDRESS,
+      entrypoint: 'anchor_screening',
+      calldata,
+    },
+    { resourceBounds },
+  );
 
   // Wait for transaction to be accepted on L2
   await provider.waitForTransaction(transaction_hash);
