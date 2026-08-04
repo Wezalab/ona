@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
-import { Info, AlertTriangle, Shield, Target, ArrowLeft, Package } from 'lucide-react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { Info, AlertTriangle, Shield, Target, Package } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors from '@/constants/colors';
+import Colors, { Radius, Spacing } from '@/constants/colors';
+import { Card, ScreenHeader, Section } from '@/components/ui';
 
 export default function AboutScreen() {
   const router = useRouter();
@@ -11,13 +12,7 @@ export default function AboutScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <ArrowLeft size={24} color={Colors.surface} />
-          </TouchableOpacity>
-          <Text style={styles.title}>{t.about.title}</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <ScreenHeader variant="bar" title={t.about.title} onBack={() => router.back()} />
 
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
           <View style={styles.appInfo}>
@@ -29,60 +24,36 @@ export default function AboutScreen() {
             </View>
           </View>
 
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <AlertTriangle size={24} color={Colors.danger} />
-              <Text style={styles.sectionTitle}>{t.about.disclaimer}</Text>
-            </View>
-            <View style={styles.disclaimerBox}>
+          <Section icon={AlertTriangle} iconColor={Colors.danger} title={t.about.disclaimer}>
+            <Card tone="danger" accentBorder>
               <Text style={styles.disclaimerText}>{t.about.disclaimerText}</Text>
-            </View>
-          </View>
+            </Card>
+          </Section>
 
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Target size={24} color={Colors.primary} />
-              <Text style={styles.sectionTitle}>{t.about.purpose}</Text>
-            </View>
+          <Section icon={Target} title={t.about.purpose}>
             <Text style={styles.sectionText}>{t.about.purposeText}</Text>
-          </View>
+          </Section>
 
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Info size={24} color={Colors.warning} />
-              <Text style={styles.sectionTitle}>{t.about.limitations}</Text>
-            </View>
+          <Section icon={Info} iconColor={Colors.warning} title={t.about.limitations}>
             <Text style={styles.sectionText}>{t.about.limitationsText}</Text>
-          </View>
+          </Section>
 
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Shield size={24} color={Colors.success} />
-              <Text style={styles.sectionTitle}>Fonctionnalités de Sécurité</Text>
-            </View>
+          <Section icon={Shield} iconColor={Colors.success} title="Fonctionnalités de Sécurité">
             <View style={styles.featuresList}>
-              <View style={styles.feature}>
-                <Text style={styles.featureBullet}>✓</Text>
-                <Text style={styles.featureText}>Fonctionne 100% hors ligne</Text>
-              </View>
-              <View style={styles.feature}>
-                <Text style={styles.featureBullet}>✓</Text>
-                <Text style={styles.featureText}>Stockage local crypté</Text>
-              </View>
-              <View style={styles.feature}>
-                <Text style={styles.featureBullet}>✓</Text>
-                <Text style={styles.featureText}>Aucune donnée personnelle requise</Text>
-              </View>
-              <View style={styles.feature}>
-                <Text style={styles.featureBullet}>✓</Text>
-                <Text style={styles.featureText}>Traitement IA sur l&apos;appareil</Text>
-              </View>
-              <View style={styles.feature}>
-                <Text style={styles.featureBullet}>✓</Text>
-                <Text style={styles.featureText}>Aucune connexion cloud</Text>
-              </View>
+              {[
+                'Fonctionne 100% hors ligne',
+                'Stockage local crypté',
+                'Aucune donnée personnelle requise',
+                'Examen de vue calibré et vérifiable',
+                'Aucune connexion cloud',
+              ].map((feature) => (
+                <View key={feature} style={styles.feature}>
+                  <Text style={styles.featureBullet}>✓</Text>
+                  <Text style={styles.featureText}>{feature}</Text>
+                </View>
+              ))}
             </View>
-          </View>
+          </Section>
 
           <View style={styles.footerInfo}>
             <Text style={styles.footerText}>
@@ -105,40 +76,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.primary,
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 24,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.surface,
-  },
-  placeholder: {
-    width: 40,
-  },
   content: {
     flex: 1,
   },
   contentContainer: {
-    padding: 24,
-    paddingBottom: 40,
-    gap: 32,
+    padding: Spacing.xl,
+    paddingBottom: Spacing.xxxl,
+    gap: Spacing.xxl,
   },
   appInfo: {
     alignItems: 'center',
-    gap: 12,
+    gap: Spacing.md,
   },
   appName: {
     fontSize: 24,
@@ -151,37 +99,17 @@ const styles = StyleSheet.create({
     gap: 6,
     backgroundColor: Colors.surfaceElevated,
     paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 12,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.md,
   },
   versionText: {
     fontSize: 14,
     color: Colors.textSecondary,
   },
-  section: {
-    gap: 12,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
-  },
   sectionText: {
     fontSize: 15,
     lineHeight: 22,
     color: Colors.textSecondary,
-  },
-  disclaimerBox: {
-    backgroundColor: Colors.dangerLight,
-    borderRadius: 12,
-    padding: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.danger,
   },
   disclaimerText: {
     fontSize: 15,
@@ -190,12 +118,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   featuresList: {
-    gap: 12,
+    gap: Spacing.md,
   },
   feature: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: Spacing.md,
   },
   featureBullet: {
     fontSize: 18,
@@ -210,8 +138,8 @@ const styles = StyleSheet.create({
   },
   footerInfo: {
     alignItems: 'center',
-    gap: 8,
-    paddingTop: 16,
+    gap: Spacing.sm,
+    paddingTop: Spacing.lg,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
   },
