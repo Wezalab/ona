@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Linking, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, RefreshCw, ShieldCheck, ExternalLink, Wallet, Trash2, Zap } from 'lucide-react-native';
+import { RefreshCw, ShieldCheck, ExternalLink, Wallet, Trash2, Zap } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { useStarknet, type ScreeningProof } from '@/hooks/useStarknet';
 import { ONA_IMPACT_CONTRACT_ADDRESS, STARKNET_NETWORK, voyagerContractUrl } from '@/services/starknet';
-import Colors from '@/constants/colors';
+import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
+import { Badge, Button, Card, EmptyState, ScreenHeader, Section, TextField } from '@/components/ui';
+import type { BadgeTone } from '@/components/ui';
 
 function riskColor(risk: string): string {
   switch (risk) {
@@ -117,37 +119,27 @@ export default function BlockchainScreen() {
     }
   };
 
-  const statusBadgeStyle = (status: ScreeningProof['status']) => {
+  const statusTone = (status: ScreeningProof['status']): BadgeTone => {
     switch (status) {
-      case 'pending': return { backgroundColor: Colors.surfaceElevated };
-      case 'anchoring': return { backgroundColor: Colors.warningLight };
-      case 'anchored': return { backgroundColor: Colors.successLight };
-      case 'error': return { backgroundColor: Colors.dangerLight };
-      default: return { backgroundColor: Colors.surfaceElevated };
+      case 'pending': return 'neutral';
+      case 'anchoring': return 'warning';
+      case 'anchored': return 'success';
+      case 'error': return 'danger';
+      default: return 'neutral';
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <ArrowLeft size={24} color={Colors.surface} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t.blockchain.title}</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <ScreenHeader variant="bar" title={t.blockchain.title} onBack={() => router.back()} />
 
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
           <Text style={styles.subtitle}>{t.blockchain.subtitle}</Text>
 
           {/* Network status */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <ShieldCheck size={24} color={Colors.primary} />
-              <Text style={styles.sectionTitle}>{t.blockchain.network}</Text>
-            </View>
-            <View style={styles.networkCard}>
+          <Section icon={ShieldCheck} title={t.blockchain.network}>
+            <Card>
               <View style={styles.networkRow}>
                 <View style={[styles.dot, { backgroundColor: network?.connected ? Colors.success : Colors.disabled }]} />
                 <Text style={styles.networkName}>
@@ -161,83 +153,75 @@ export default function BlockchainScreen() {
                 {t.blockchain.contract}: {truncateHex(ONA_IMPACT_CONTRACT_ADDRESS)}
               </Text>
               <Text style={styles.networkDetail}>{String(STARKNET_NETWORK)}</Text>
-              <TouchableOpacity style={styles.refreshBtn} onPress={refreshNetwork} activeOpacity={0.7}>
-                <RefreshCw size={16} color={Colors.primary} />
-                <Text style={styles.refreshBtnText}>{t.blockchain.refresh}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+              <Button
+                title={t.blockchain.refresh}
+                onPress={refreshNetwork}
+                variant="outline"
+                size="md"
+                fullWidth={false}
+                icon={RefreshCw}
+                style={styles.refreshBtn}
+              />
+            </Card>
+          </Section>
 
           {/* Operator wallet */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Wallet size={24} color={Colors.primary} />
-              <Text style={styles.sectionTitle}>{t.blockchain.wallet}</Text>
-            </View>
-
-            <View style={[styles.modeBadge, hasWallet ? styles.modeBadgeLive : styles.modeBadgeSim]}>
-              <View style={[styles.dot, { backgroundColor: hasWallet ? Colors.success : Colors.warning }]} />
-              <Text style={styles.modeBadgeText}>
-                {hasWallet ? t.blockchain.realMode : t.blockchain.simulationMode}
-              </Text>
-            </View>
+          <Section icon={Wallet} title={t.blockchain.wallet}>
+            <Badge
+              label={hasWallet ? t.blockchain.realMode : t.blockchain.simulationMode}
+              tone={hasWallet ? 'success' : 'warning'}
+              dot
+            />
 
             {hasWallet ? (
-              <View style={styles.networkCard}>
+              <Card>
                 <Text style={styles.walletOkText}>{t.blockchain.walletConfigured}</Text>
                 <Text style={styles.networkDetail}>{truncateHex(walletAddress ?? '', 12)}</Text>
-                <TouchableOpacity
-                  style={styles.clearBtn}
+                <Button
+                  title={t.blockchain.clearWallet}
                   onPress={handleClearWallet}
                   disabled={walletBusy}
-                  activeOpacity={0.7}
-                >
-                  <Trash2 size={16} color={Colors.danger} />
-                  <Text style={styles.clearBtnText}>{t.blockchain.clearWallet}</Text>
-                </TouchableOpacity>
-              </View>
+                  variant="outline"
+                  size="md"
+                  icon={Trash2}
+                  style={styles.clearBtn}
+                />
+              </Card>
             ) : (
-              <View style={styles.networkCard}>
+              <Card style={styles.walletFormCard}>
                 <Text style={styles.walletMissingText}>{t.blockchain.walletMissing}</Text>
-                <Text style={styles.inputLabel}>{t.blockchain.accountAddress}</Text>
-                <TextInput
+                <TextField
+                  label={t.blockchain.accountAddress}
                   value={addressInput}
                   onChangeText={setAddressInput}
                   autoCapitalize="none"
                   autoCorrect={false}
                   placeholder="0x…"
-                  placeholderTextColor={Colors.textLight}
-                  style={styles.input}
+                  monospace
                 />
-                <Text style={styles.inputLabel}>{t.blockchain.privateKey}</Text>
-                <TextInput
+                <TextField
+                  label={t.blockchain.privateKey}
                   value={keyInput}
                   onChangeText={setKeyInput}
                   autoCapitalize="none"
                   autoCorrect={false}
                   secureTextEntry
                   placeholder="0x…"
-                  placeholderTextColor={Colors.textLight}
-                  style={styles.input}
+                  monospace
                 />
-                <TouchableOpacity
-                  style={[styles.saveBtn, walletBusy && styles.saveBtnDisabled]}
+                <Button
+                  title={t.blockchain.saveWallet}
                   onPress={handleSaveWallet}
                   disabled={walletBusy}
-                  activeOpacity={0.8}
-                >
-                  {walletBusy ? (
-                    <ActivityIndicator color={Colors.surface} />
-                  ) : (
-                    <Text style={styles.saveBtnText}>{t.blockchain.saveWallet}</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
+                  loading={walletBusy}
+                  size="md"
+                />
+              </Card>
             )}
 
             <Text style={styles.walletHint}>{t.blockchain.walletHint}</Text>
             {walletError && <Text style={styles.errorText}>{walletError}</Text>}
-          </View>
+          </Section>
 
           {/* Impact summary */}
           <View style={styles.statsRow}>
@@ -258,96 +242,86 @@ export default function BlockchainScreen() {
           </View>
 
           {/* Privacy notice */}
-          <View style={styles.notice}>
+          <Card tone="info" accentBorder>
             <Text style={styles.noticeText}>{t.blockchain.privacy}</Text>
-          </View>
+          </Card>
 
           {/* Proof queue */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{t.blockchain.proofs}</Text>
-              {pendingCount > 0 && (
-                <TouchableOpacity
-                  style={[styles.anchorAllBtn, anchorAllBusy && styles.anchorAllBtnDisabled]}
+          <Section
+            title={t.blockchain.proofs}
+            rightSlot={
+              pendingCount > 0 ? (
+                <Button
+                  title={anchorAllBusy ? t.blockchain.anchoring : `Anchor all (${pendingCount})`}
                   onPress={handleAnchorAll}
                   disabled={anchorAllBusy}
-                  activeOpacity={0.8}
-                >
-                  {anchorAllBusy ? (
-                    <ActivityIndicator size="small" color={Colors.surface} />
-                  ) : (
-                    <Zap size={14} color={Colors.surface} />
-                  )}
-                  <Text style={styles.anchorAllBtnText}>
-                    {anchorAllBusy ? t.blockchain.anchoring : `Anchor all (${pendingCount})`}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-
+                  loading={anchorAllBusy}
+                  icon={Zap}
+                  size="md"
+                  fullWidth={false}
+                />
+              ) : undefined
+            }
+          >
             {proofQueue.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyText}>{t.blockchain.empty}</Text>
-              </View>
+              <EmptyState icon={ShieldCheck} title={t.blockchain.empty} />
             ) : (
-              proofQueue.map((proof) => (
-                <View key={proof.record.id} style={styles.card}>
-                  <View style={styles.cardRow}>
-                    <View style={[styles.riskBadge, { backgroundColor: riskColor(proof.record.riskLevel) }]}>
-                      <Text style={styles.riskBadgeText}>{proof.record.riskLevel.toUpperCase()}</Text>
+              <View style={{ gap: Spacing.md }}>
+                {proofQueue.map((proof) => (
+                  <Card key={proof.record.id}>
+                    <View style={styles.cardRow}>
+                      <Badge label={proof.record.riskLevel.toUpperCase()} tone={proof.record.riskLevel as BadgeTone} size="sm" />
+                      <Text style={styles.cardDate}>
+                        {new Date(proof.record.timestamp).toLocaleDateString()}
+                      </Text>
+                      <Badge label={statusLabel(proof.status)} tone={statusTone(proof.status)} size="sm" />
                     </View>
-                    <Text style={styles.cardDate}>
-                      {new Date(proof.record.timestamp).toLocaleDateString()}
-                    </Text>
-                    <View style={[styles.statusBadge, statusBadgeStyle(proof.status)]}>
-                      <Text style={styles.statusText}>{statusLabel(proof.status)}</Text>
+
+                    <Text style={styles.proofLabel}>Poseidon proof</Text>
+                    <Text style={styles.proofHash}>{truncateHex(proof.proof)}</Text>
+
+                    {proof.txHash && (
+                      <>
+                        <Text style={styles.proofLabel}>Tx hash</Text>
+                        <Text style={styles.proofHash}>{truncateHex(proof.txHash)}</Text>
+                      </>
+                    )}
+
+                    {proof.error && <Text style={styles.errorText}>{proof.error}</Text>}
+
+                    <View style={styles.cardActions}>
+                      {proof.status === 'pending' && (
+                        <Button
+                          title={t.blockchain.anchorToStarknet}
+                          onPress={() => anchorProof(proof.record.id)}
+                          size="md"
+                        />
+                      )}
+                      {proof.status === 'anchoring' && (
+                        <Text style={styles.anchoringText}>{t.blockchain.anchoring}</Text>
+                      )}
+                      {proof.status === 'anchored' && (
+                        <TouchableOpacity
+                          style={styles.explorerBtn}
+                          activeOpacity={0.7}
+                          onPress={() =>
+                            Linking.openURL(
+                              proof.txHash ? voyagerTxUrl(proof.txHash) : voyagerContractUrl(),
+                            )
+                          }
+                        >
+                          <ExternalLink size={16} color={Colors.primary} />
+                          <Text style={styles.explorerBtnText}>{t.blockchain.viewOnVoyager}</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
-                  </View>
-
-                  <Text style={styles.proofLabel}>Poseidon proof</Text>
-                  <Text style={styles.proofHash}>{truncateHex(proof.proof)}</Text>
-
-                  {proof.txHash && (
-                    <>
-                      <Text style={styles.proofLabel}>Tx hash</Text>
-                      <Text style={styles.proofHash}>{truncateHex(proof.txHash)}</Text>
-                    </>
-                  )}
-
-                  {proof.error && <Text style={styles.errorText}>{proof.error}</Text>}
-
-                  <View style={styles.cardActions}>
-                    {proof.status === 'pending' && (
-                      <TouchableOpacity style={styles.anchorBtn} onPress={() => anchorProof(proof.record.id)} activeOpacity={0.8}>
-                        <Text style={styles.anchorBtnText}>{t.blockchain.anchorToStarknet}</Text>
-                      </TouchableOpacity>
-                    )}
-                    {proof.status === 'anchoring' && (
-                      <Text style={styles.anchoringText}>{t.blockchain.anchoring}</Text>
-                    )}
-                    {proof.status === 'anchored' && (
-                      <TouchableOpacity
-                        style={styles.explorerBtn}
-                        activeOpacity={0.7}
-                        onPress={() =>
-                          Linking.openURL(
-                            proof.txHash ? voyagerTxUrl(proof.txHash) : voyagerContractUrl(),
-                          )
-                        }
-                      >
-                        <ExternalLink size={16} color={Colors.primary} />
-                        <Text style={styles.explorerBtnText}>{t.blockchain.viewOnVoyager}</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              ))
+                  </Card>
+                ))}
+              </View>
             )}
-          </View>
+          </Section>
 
-          <TouchableOpacity style={styles.backHomeBtn} onPress={() => router.push('/home')} activeOpacity={0.7}>
-            <Text style={styles.backHomeText}>{t.blockchain.backHome}</Text>
-          </TouchableOpacity>
+          <Button title={t.blockchain.backHome} onPress={() => router.push('/home')} variant="outline" />
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -357,124 +331,26 @@ export default function BlockchainScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.primary },
   container: { flex: 1, backgroundColor: Colors.background },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.primary,
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 24,
-  },
-  backButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 20, fontWeight: '700', color: Colors.surface },
-  placeholder: { width: 40 },
   content: { flex: 1 },
-  contentContainer: { padding: 24, gap: 24 },
-  subtitle: { fontSize: 15, color: Colors.textSecondary, lineHeight: 21 },
-  section: { gap: 12 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, justifyContent: 'space-between' },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: Colors.text },
-  networkCard: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    padding: 16,
-    gap: 8,
-  },
-  networkRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  contentContainer: { padding: Spacing.xl, gap: Spacing.xl },
+  subtitle: { fontSize: FontSize.base, color: Colors.textSecondary, lineHeight: 21 },
+  networkRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginBottom: Spacing.xs },
   dot: { width: 10, height: 10, borderRadius: 5 },
-  networkName: { fontSize: 15, fontWeight: '600', color: Colors.text },
-  networkDetail: { fontSize: 12, color: Colors.textSecondary, fontFamily: 'monospace' },
-  refreshBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 4,
-    alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  refreshBtnText: { fontSize: 13, color: Colors.primary, fontWeight: '600' },
-  modeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    alignSelf: 'flex-start',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-  },
-  modeBadgeLive: { backgroundColor: Colors.successLight },
-  modeBadgeSim: { backgroundColor: Colors.warningLight },
-  modeBadgeText: { fontSize: 12, fontWeight: '700', color: Colors.text },
-  walletOkText: { fontSize: 14, fontWeight: '600', color: Colors.success },
-  walletMissingText: { fontSize: 13, color: Colors.textSecondary, marginBottom: 4 },
-  inputLabel: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary, marginTop: 4 },
-  input: {
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 14,
-    color: Colors.text,
-    fontFamily: 'monospace',
-  },
-  saveBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  saveBtnDisabled: { opacity: 0.6 },
-  saveBtnText: { color: Colors.surface, fontWeight: '700', fontSize: 14 },
-  clearBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    borderWidth: 1,
-    borderColor: Colors.danger,
-    borderRadius: 10,
-    paddingVertical: 12,
-    marginTop: 4,
-  },
-  clearBtnText: { color: Colors.danger, fontWeight: '600', fontSize: 14 },
-  walletHint: { fontSize: 12, color: Colors.textLight, lineHeight: 17 },
-  statsRow: { flexDirection: 'row', gap: 12 },
-  statBox: { flex: 1, backgroundColor: Colors.surfaceElevated, borderRadius: 12, padding: 16, alignItems: 'center' },
+  networkName: { fontSize: FontSize.base, fontWeight: '600', color: Colors.text },
+  networkDetail: { fontSize: FontSize.xs, color: Colors.textSecondary, fontFamily: 'monospace' },
+  refreshBtn: { marginTop: Spacing.sm, alignSelf: 'flex-start' },
+  walletFormCard: { gap: Spacing.md },
+  walletOkText: { fontSize: FontSize.base, fontWeight: '600', color: Colors.success },
+  clearBtn: { marginTop: Spacing.sm },
+  walletMissingText: { fontSize: FontSize.sm, color: Colors.textSecondary, marginBottom: Spacing.xs },
+  walletHint: { fontSize: FontSize.xs, color: Colors.textLight, lineHeight: 17 },
+  statsRow: { flexDirection: 'row', gap: Spacing.md },
+  statBox: { flex: 1, backgroundColor: Colors.surfaceElevated, borderRadius: Radius.md, padding: Spacing.lg, alignItems: 'center' },
   statValue: { fontSize: 30, fontWeight: '700', color: Colors.primary },
-  statLabel: { fontSize: 12, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' },
-  notice: {
-    backgroundColor: Colors.infoLight,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
-    borderRadius: 8,
-    padding: 12,
-  },
-  noticeText: { fontSize: 12, color: Colors.text, lineHeight: 18 },
-  card: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 12,
-    gap: 8,
-  },
-  cardRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  cardDate: { flex: 1, fontSize: 13, color: Colors.textSecondary },
-  riskBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  riskBadgeText: { fontSize: 10, fontWeight: '700', color: Colors.surface },
-  statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  statusText: { fontSize: 11, fontWeight: '600', color: Colors.text },
+  statLabel: { fontSize: FontSize.xs, color: Colors.textSecondary, marginTop: Spacing.xs, textAlign: 'center' },
+  noticeText: { fontSize: FontSize.xs, color: Colors.text, lineHeight: 18 },
+  cardRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginBottom: Spacing.sm },
+  cardDate: { flex: 1, fontSize: FontSize.sm, color: Colors.textSecondary },
   proofLabel: {
     fontSize: 11,
     fontWeight: '600',
@@ -482,37 +358,19 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  proofHash: { fontSize: 12, fontFamily: 'monospace', color: Colors.primaryDark },
-  errorText: { fontSize: 12, color: Colors.danger, fontStyle: 'italic' },
-  cardActions: { marginTop: 4 },
-  anchorBtn: { backgroundColor: Colors.primary, borderRadius: 8, paddingVertical: 12, alignItems: 'center' },
-  anchorBtnText: { color: Colors.surface, fontWeight: '700', fontSize: 14 },
-  anchoringText: { fontSize: 13, color: Colors.primaryDark, fontStyle: 'italic', textAlign: 'center', paddingVertical: 8 },
+  proofHash: { fontSize: FontSize.xs, fontFamily: 'monospace', color: Colors.primaryDark, marginBottom: Spacing.xs },
+  errorText: { fontSize: FontSize.xs, color: Colors.danger, fontStyle: 'italic' },
+  cardActions: { marginTop: Spacing.sm },
+  anchoringText: { fontSize: FontSize.sm, color: Colors.primaryDark, fontStyle: 'italic', textAlign: 'center', paddingVertical: Spacing.sm },
   explorerBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: Spacing.sm,
     borderWidth: 1,
     borderColor: Colors.primary,
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: Radius.sm,
+    paddingVertical: Spacing.md,
   },
-  explorerBtnText: { color: Colors.primary, fontWeight: '600', fontSize: 14 },
-  emptyState: { alignItems: 'center', paddingVertical: 32, gap: 16 },
-  emptyText: { fontSize: 14, color: Colors.textLight, textAlign: 'center' },
-  backHomeBtn: { borderWidth: 1, borderColor: Colors.primary, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  backHomeText: { fontSize: 16, fontWeight: '600', color: Colors.primary },
-  anchorAllBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginLeft: 'auto',
-  },
-  anchorAllBtnDisabled: { opacity: 0.6 },
-  anchorAllBtnText: { fontSize: 13, fontWeight: '700', color: Colors.surface },
+  explorerBtnText: { color: Colors.primary, fontWeight: '600', fontSize: FontSize.base },
 });
