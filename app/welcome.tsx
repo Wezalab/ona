@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Image } from 'react-native';
 import { ShieldCheck, Smartphone } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors from '@/constants/colors';
+import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
+import { Button, Card } from '@/components/ui';
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -26,31 +27,25 @@ export default function WelcomeScreen() {
         </View>
 
         <View style={styles.features}>
-          <View style={styles.feature}>
+          <Card style={styles.feature} elevated>
             <View style={styles.iconContainer}>
-              <Smartphone size={32} color={Colors.primary} />
+              <Smartphone size={30} color={Colors.primary} />
             </View>
             <Text style={styles.featureText}>{t.welcome.description}</Text>
-          </View>
+          </Card>
 
-          <View style={styles.feature}>
-            <View style={styles.iconContainer}>
-              <ShieldCheck size={32} color={Colors.success} />
+          <Card style={styles.feature} elevated>
+            <View style={[styles.iconContainer, { backgroundColor: Colors.successLight }]}>
+              <ShieldCheck size={30} color={Colors.success} />
             </View>
             <Text style={styles.featureText}>
               Fonctionne 100% hors ligne • Données cryptées • Aucune information personnelle requise
             </Text>
-          </View>
+          </Card>
         </View>
 
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleContinue}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.buttonText}>{t.welcome.getStarted}</Text>
-          </TouchableOpacity>
+          <Button title={t.welcome.getStarted} onPress={handleContinue} />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -67,80 +62,59 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flexGrow: 1,
-    paddingBottom: 24,
+    paddingBottom: Spacing.xl,
   },
   header: {
     alignItems: 'center',
-    paddingTop: 80,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingTop: 72,
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.xxl,
   },
   logo: {
     width: 200,
     height: 100,
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
     color: Colors.text,
-    marginTop: 24,
-    marginBottom: 12,
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.md,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontWeight: '600',
     color: Colors.primary,
     textAlign: 'center',
   },
   features: {
     flex: 1,
-    paddingHorizontal: 24,
-    gap: 24,
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.xl,
   },
   feature: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 16,
-    backgroundColor: Colors.surface,
-    padding: 20,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    gap: Spacing.lg,
   },
   iconContainer: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: Radius.xl,
     backgroundColor: Colors.infoLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
   featureText: {
     flex: 1,
-    fontSize: 15,
+    fontSize: FontSize.base,
     lineHeight: 22,
     color: Colors.text,
   },
   footer: {
-    paddingHorizontal: 24,
-    paddingTop: 32,
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    borderRadius: 16,
-    paddingVertical: 18,
-    alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.surface,
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.xxl,
   },
 });

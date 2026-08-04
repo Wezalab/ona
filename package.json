@@ -52,6 +52,7 @@
     "react-native-worklets": "0.5.1",
     "starknet": "^10.0.2",
     "stream-browserify": "^3.0.0",
+    "zod": "^4.4.3",
     "zustand": "^5.0.2"
   },
   "devDependencies": {

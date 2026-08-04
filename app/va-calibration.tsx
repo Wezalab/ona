@@ -1,77 +1,113 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
-import { CreditCard, ArrowRight } from 'lucide-react-native';
+import { CreditCard, ArrowRight, Minus, Plus, Ruler } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors from '@/constants/colors';
+import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
+import { CARD_HEIGHT_MM, CARD_WIDTH_MM, DISTANCE_OPTIONS_M, type TestDistanceMeters } from '@/constants/visualAcuity';
+import { Button, ScreenHeader, SelectableCard, StepProgress } from '@/components/ui';
 
-const CARD_WIDTH_MM = 85.6;
-const CARD_HEIGHT_MM = 53.98;
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const MIN_CARD_WIDTH_PT = 140;
+const MAX_CARD_WIDTH_PT = Math.min(SCREEN_WIDTH - 48, 420);
+const STEP_PT = 4;
 
 export default function VACalibrationScreen() {
   const router = useRouter();
-  const { t } = useApp();
-  const [calibrated, setCalibrated] = useState(false);
+  const { t, setCalibration } = useApp();
+  const [step, setStep] = useState<'card' | 'distance'>('card');
+  const [cardWidthPt, setCardWidthPt] = useState(SCREEN_WIDTH * 0.6);
+  const [pixelsPerMM, setPixelsPerMM] = useState<number | null>(null);
 
-  const screenWidth = Dimensions.get('window').width;
-  const cardDisplayWidth = screenWidth * 0.7;
-  const cardDisplayHeight = (cardDisplayWidth * CARD_HEIGHT_MM) / CARD_WIDTH_MM;
+  const steps = [
+    t.screeningFlow.stepPatient,
+    t.screeningFlow.stepCalibration,
+    t.screeningFlow.stepVisionTest,
+    t.screeningFlow.stepPhotos,
+    t.screeningFlow.stepResults,
+  ];
 
-  const handleCalibrated = () => {
-    setCalibrated(true);
-    setTimeout(() => {
-      router.push('/va-test');
-    }, 500);
+  const cardHeightPt = (cardWidthPt * CARD_HEIGHT_MM) / CARD_WIDTH_MM;
+
+  const adjustCard = (deltaPt: number) => {
+    setCardWidthPt((prev) => Math.max(MIN_CARD_WIDTH_PT, Math.min(MAX_CARD_WIDTH_PT, prev + deltaPt)));
+  };
+
+  const handleCardConfirmed = () => {
+    setPixelsPerMM(cardWidthPt / CARD_WIDTH_MM);
+    setStep('distance');
+  };
+
+  const handleDistanceSelected = (distanceMeters: TestDistanceMeters) => {
+    if (!pixelsPerMM) return;
+    setCalibration({ pixelsPerMM, testDistanceMeters: distanceMeters });
+    router.push('/va-test');
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <CreditCard size={48} color={Colors.primary} />
-          <Text style={styles.title}>{t.visualAcuity.calibrationTitle}</Text>
-          <Text style={styles.subtitle}>{t.visualAcuity.calibrationInstructions}</Text>
-        </View>
+      <View style={styles.stepBar}>
+        <StepProgress steps={steps} currentStepIndex={1} />
+      </View>
 
-        <View style={styles.content}>
-          <Text style={styles.instruction}>{t.visualAcuity.placeCardInstruction}</Text>
-          
-          <View style={styles.calibrationContainer}>
-            <View 
-              style={[
-                styles.cardOutline,
-                {
-                  width: cardDisplayWidth,
-                  height: cardDisplayHeight,
-                }
-              ]}
-            >
-              <CreditCard 
-                size={cardDisplayWidth * 0.3} 
-                color={Colors.textLight} 
-                strokeWidth={1}
-              />
+      {step === 'card' ? (
+        <View style={styles.container}>
+          <ScreenHeader icon={CreditCard} title={t.visualAcuity.calibrationTitle} subtitle={t.visualAcuity.calibrationInstructions} compact />
+
+          <View style={styles.content}>
+            <Text style={styles.instruction}>{t.visualAcuity.placeCardInstruction}</Text>
+
+            <View style={styles.calibrationContainer}>
+              <View
+                style={[
+                  styles.cardOutline,
+                  {
+                    width: cardWidthPt,
+                    height: cardHeightPt,
+                  },
+                ]}
+              >
+                <CreditCard size={Math.min(cardWidthPt * 0.3, 96)} color={Colors.textLight} strokeWidth={1} />
+              </View>
+            </View>
+
+            <View style={styles.stepperRow}>
+              <TouchableOpacity style={styles.stepperButton} onPress={() => adjustCard(-STEP_PT)} activeOpacity={0.7}>
+                <Minus size={24} color={Colors.primary} />
+              </TouchableOpacity>
+              <View style={styles.stepperLabel}>
+                <Ruler size={16} color={Colors.textSecondary} />
+                <Text style={styles.stepperText}>{t.visualAcuity.adjustCardInstruction}</Text>
+              </View>
+              <TouchableOpacity style={styles.stepperButton} onPress={() => adjustCard(STEP_PT)} activeOpacity={0.7}>
+                <Plus size={24} color={Colors.primary} />
+              </TouchableOpacity>
             </View>
           </View>
 
-          <View style={styles.infoBox}>
-            <Text style={styles.infoText}>
-              📏 Placez une carte bancaire standard (85.6mm x 53.98mm) sur le rectangle pour calibrer la taille d&apos;affichage
-            </Text>
+          <View style={styles.footer}>
+            <Button title={t.visualAcuity.cardPlaced} onPress={handleCardConfirmed} icon={ArrowRight} iconPosition="right" />
           </View>
         </View>
+      ) : (
+        <View style={styles.container}>
+          <ScreenHeader icon={Ruler} title={t.visualAcuity.distanceTitle} subtitle={t.visualAcuity.distanceInstructions} compact />
 
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={[styles.button, calibrated && styles.buttonSuccess]}
-            onPress={handleCalibrated}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.buttonText}>{t.visualAcuity.cardPlaced}</Text>
-            <ArrowRight size={20} color={Colors.surface} />
-          </TouchableOpacity>
+          <View style={styles.distanceContent}>
+            <View style={styles.distanceOptions}>
+              {DISTANCE_OPTIONS_M.map((distance) => (
+                <SelectableCard
+                  key={distance}
+                  title={distance === 3 ? t.visualAcuity.distance3m : t.visualAcuity.distance6m}
+                  onPress={() => handleDistanceSelected(distance)}
+                  size="lg"
+                />
+              ))}
+            </View>
+            <Text style={styles.distanceHelp}>{t.visualAcuity.distanceHelp}</Text>
+          </View>
         </View>
-      </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -81,35 +117,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  stepBar: {
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+  },
   container: {
     flex: 1,
   },
-  header: {
-    alignItems: 'center',
-    paddingTop: 40,
-    paddingHorizontal: 24,
-    paddingBottom: 32,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.text,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: Spacing.xl,
     justifyContent: 'center',
-    gap: 32,
+    gap: Spacing.xxl,
   },
   instruction: {
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontWeight: '600',
     color: Colors.text,
     textAlign: 'center',
@@ -121,49 +144,56 @@ const styles = StyleSheet.create({
   cardOutline: {
     borderWidth: 3,
     borderColor: Colors.primary,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: Colors.infoLight,
   },
-  infoBox: {
-    backgroundColor: Colors.infoLight,
-    borderRadius: 12,
-    padding: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.info,
-  },
-  infoText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: Colors.text,
-  },
-  footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-  },
-  button: {
+  stepperRow: {
     flexDirection: 'row',
-    backgroundColor: Colors.primary,
-    borderRadius: 16,
-    paddingVertical: 18,
+    alignItems: 'center',
+    gap: Spacing.lg,
+  },
+  stepperButton: {
+    width: 52,
+    height: 52,
+    borderRadius: Radius.md,
+    backgroundColor: Colors.surface,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
   },
-  buttonSuccess: {
-    backgroundColor: Colors.success,
-    shadowColor: Colors.success,
+  stepperLabel: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
   },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.surface,
+  stepperText: {
+    flex: 1,
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+  },
+  footer: {
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.xl,
+  },
+  distanceContent: {
+    flex: 1,
+    paddingHorizontal: Spacing.xl,
+    justifyContent: 'center',
+    gap: Spacing.xxl,
+  },
+  distanceOptions: {
+    gap: Spacing.lg,
+  },
+  distanceHelp: {
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

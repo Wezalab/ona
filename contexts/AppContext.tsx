@@ -2,6 +2,7 @@ import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect } from 'react';
 import { Language, getTranslation, Translations } from '@/constants/translations';
+import type { EyeVisualAcuity, TestDistanceMeters } from '@/constants/visualAcuity';
 
 export interface PatientInfo {
   patientId?: string;
@@ -11,29 +12,31 @@ export interface PatientInfo {
 }
 
 export interface VisualAcuityResult {
-  rightEye: {
-    score: number;
-    risk: 'low' | 'medium' | 'high';
-  };
-  leftEye: {
-    score: number;
-    risk: 'low' | 'medium' | 'high';
-  };
+  distanceMeters: TestDistanceMeters;
+  rightEye: EyeVisualAcuity;
+  leftEye: EyeVisualAcuity;
 }
 
+export interface CalibrationState {
+  pixelsPerMM: number;
+  testDistanceMeters: TestDistanceMeters;
+}
+
+/**
+ * Eye photos are optional and are never scored on-device (no fake AI). They
+ * are stored as-is for later specialist review; the risk score comes only
+ * from the real visualAcuity measurement.
+ */
 export interface EyeImageResult {
-  rightEye: {
-    imageUri?: string;
-    quality: 'good' | 'poor';
-    risk: 'low' | 'medium' | 'high';
-    aiScore: number;
+  rightEye?: {
+    imageUri: string;
+    capturedAt: number;
   };
-  leftEye: {
-    imageUri?: string;
-    quality: 'good' | 'poor';
-    risk: 'low' | 'medium' | 'high';
-    aiScore: number;
+  leftEye?: {
+    imageUri: string;
+    capturedAt: number;
   };
+  reviewStatus: 'pending';
 }
 
 export interface ScreeningRecord {
@@ -68,6 +71,7 @@ export const [AppProvider, useApp] = createContextHook(() => {
   const [currentScreening, setCurrentScreening] = useState<CurrentScreening>({});
   const [screenings, setScreenings] = useState<ScreeningRecord[]>([]);
   const [lastSync, setLastSync] = useState<number | null>(null);
+  const [calibration, setCalibrationState] = useState<CalibrationState | null>(null);
 
   useEffect(() => {
     loadPersistedData();
@@ -127,6 +131,11 @@ export const [AppProvider, useApp] = createContextHook(() => {
 
   const startNewScreening = () => {
     setCurrentScreening({});
+    setCalibrationState(null);
+  };
+
+  const setCalibration = (value: CalibrationState) => {
+    setCalibrationState(value);
   };
 
   const updatePatientInfo = (info: PatientInfo) => {
@@ -164,19 +173,14 @@ export const [AppProvider, useApp] = createContextHook(() => {
     }
   };
 
+  // Eye photos are optional and unscored (pending specialist review only) —
+  // the real risk/referral decision comes solely from the measured Visual
+  // Acuity result, never from a fabricated image analysis.
   const calculateOverallRisk = (): 'low' | 'medium' | 'high' => {
-    const risks: ('low' | 'medium' | 'high')[] = [];
+    const va = currentScreening.visualAcuity;
+    if (!va) return 'low';
 
-    if (currentScreening.visualAcuity) {
-      risks.push(currentScreening.visualAcuity.rightEye.risk);
-      risks.push(currentScreening.visualAcuity.leftEye.risk);
-    }
-
-    if (currentScreening.eyeImages) {
-      risks.push(currentScreening.eyeImages.rightEye.risk);
-      risks.push(currentScreening.eyeImages.leftEye.risk);
-    }
-
+    const risks: ('low' | 'medium' | 'high')[] = [va.rightEye.risk, va.leftEye.risk];
     if (risks.includes('high')) return 'high';
     if (risks.includes('medium')) return 'medium';
     return 'low';
@@ -227,5 +231,7 @@ export const [AppProvider, useApp] = createContextHook(() => {
     clearAllData,
     syncData,
     lastSync,
+    calibration,
+    setCalibration,
   };
 });

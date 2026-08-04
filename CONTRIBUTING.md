@@ -94,8 +94,8 @@ ona/
 │   ├── welcome.tsx         # Onboarding
 │   ├── consent.tsx         # Patient consent flow
 │   ├── patient-info.tsx    # Patient registration
-│   ├── eye-capture.tsx     # Camera capture screen
-│   ├── ai-processing.tsx   # On-device TFLite inference
+│   ├── eye-capture.tsx     # Optional camera capture screen (per-eye skip)
+│   ├── eye-photo-review.tsx # Honest "pending specialist review" state (no on-device AI yet)
 │   ├── screening-results.tsx
 │   ├── screening-detail.tsx
 │   ├── history.tsx         # Past screenings
