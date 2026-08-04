@@ -1,8 +1,11 @@
 import { useRouter } from 'expo-router';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
-import { History as HistoryIcon, FileText, ArrowLeft } from 'lucide-react-native';
+import { History as HistoryIcon, FileText } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors from '@/constants/colors';
+import type { RiskLevel } from '@/constants/visualAcuity';
+import Colors, { FontSize, Radius, Shadow, Spacing } from '@/constants/colors';
+import { Badge, EmptyState, ScreenHeader } from '@/components/ui';
+import type { BadgeTone } from '@/components/ui';
 
 export default function HistoryScreen() {
   const router = useRouter();
@@ -19,15 +22,7 @@ export default function HistoryScreen() {
     });
   };
 
-  const getRiskColor = (risk: 'low' | 'medium' | 'high') => {
-    switch (risk) {
-      case 'low': return Colors.success;
-      case 'medium': return Colors.warning;
-      case 'high': return Colors.danger;
-    }
-  };
-
-  const getRiskText = (risk: 'low' | 'medium' | 'high') => {
+  const getRiskText = (risk: RiskLevel) => {
     switch (risk) {
       case 'low': return t.results.riskLow;
       case 'medium': return t.results.riskMedium;
@@ -38,22 +33,14 @@ export default function HistoryScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <ArrowLeft size={24} color={Colors.surface} />
-          </TouchableOpacity>
-          <Text style={styles.title}>{t.history.title}</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <ScreenHeader variant="bar" title={t.history.title} onBack={() => router.back()} />
 
         {screenings.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <HistoryIcon size={64} color={Colors.textLight} />
-            <Text style={styles.emptyTitle}>{t.history.noScreenings}</Text>
-            <Text style={styles.emptyText}>
-              Les dépistages enregistrés apparaîtront ici
-            </Text>
-          </View>
+          <EmptyState
+            icon={HistoryIcon}
+            title={t.history.noScreenings}
+            description="Les dépistages enregistrés apparaîtront ici"
+          />
         ) : (
           <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
             {screenings.slice().reverse().map((screening) => (
@@ -72,11 +59,7 @@ export default function HistoryScreen() {
                       {screening.patientInfo.patientId || `Dépistage #${screening.id.slice(-8)}`}
                     </Text>
                   </View>
-                  <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(screening.overallRisk)}20` }]}>
-                    <Text style={[styles.riskText, { color: getRiskColor(screening.overallRisk) }]}>
-                      {getRiskText(screening.overallRisk)}
-                    </Text>
-                  </View>
+                  <Badge label={getRiskText(screening.overallRisk)} tone={screening.overallRisk as BadgeTone} size="sm" />
                 </View>
 
                 <View style={styles.cardDetails}>
@@ -114,65 +97,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.primary,
-    paddingTop: 30,
-    paddingBottom: 20,
-    paddingHorizontal: 24,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.surface,
-  },
-  placeholder: {
-    width: 40,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    gap: 16,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
   list: {
     flex: 1,
   },
   listContent: {
-    padding: 24,
-    gap: 16,
+    padding: Spacing.xl,
+    gap: Spacing.lg,
   },
   screeningCard: {
     backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
     borderWidth: 1,
     borderColor: Colors.border,
-    gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    gap: Spacing.md,
+    ...Shadow.card,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -182,45 +121,36 @@ const styles = StyleSheet.create({
   cardTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     flex: 1,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontWeight: '700',
     color: Colors.text,
     flex: 1,
   },
-  riskBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 6,
-  },
-  riskText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
   cardDetails: {
-    gap: 4,
+    gap: Spacing.xs,
   },
   detailText: {
-    fontSize: 13,
+    fontSize: FontSize.sm,
     color: Colors.textSecondary,
   },
   dateText: {
-    fontSize: 12,
+    fontSize: FontSize.xs,
     color: Colors.textLight,
-    marginTop: 4,
+    marginTop: Spacing.xs,
   },
   referralBadge: {
     backgroundColor: Colors.warningLight,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.sm,
     alignSelf: 'flex-start',
   },
   referralText: {
-    fontSize: 12,
+    fontSize: FontSize.xs,
     fontWeight: '700',
     color: Colors.warning,
   },
