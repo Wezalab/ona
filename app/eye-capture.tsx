@@ -2,22 +2,31 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Alert, Platform, Image } from 'react-native';
-import { Camera, CheckCircle2, RotateCcw, AlertCircle, ArrowLeft } from 'lucide-react-native';
+import { Camera, CheckCircle2, RotateCcw, ArrowLeft, SkipForward } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors from '@/constants/colors';
+import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
+import { Button, StepProgress } from '@/components/ui';
 
 type EyeBeingCaptured = 'right' | 'left';
 
 export default function EyeCaptureScreen() {
   const router = useRouter();
-  const { t } = useApp();
+  const { t, updateEyeImages } = useApp();
   const cameraRef = useRef<CameraView>(null);
-  
+
   const [permission, requestPermission] = useCameraPermissions();
   const [currentEye, setCurrentEye] = useState<EyeBeingCaptured>('right');
   const [rightEyeImage, setRightEyeImage] = useState<string | null>(null);
   const [leftEyeImage, setLeftEyeImage] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  const steps = [
+    t.screeningFlow.stepPatient,
+    t.screeningFlow.stepCalibration,
+    t.screeningFlow.stepVisionTest,
+    t.screeningFlow.stepPhotos,
+    t.screeningFlow.stepResults,
+  ];
 
   if (!permission) {
     return <View style={styles.container}><Text>Loading...</Text></View>;
@@ -32,9 +41,8 @@ export default function EyeCaptureScreen() {
           <Text style={styles.permissionText}>
             Nous avons besoin d&apos;accéder à votre caméra pour capturer des images de l&apos;œil.
           </Text>
-          <TouchableOpacity style={styles.button} onPress={requestPermission}>
-            <Text style={styles.buttonText}>Autoriser la Caméra</Text>
-          </TouchableOpacity>
+          <Button title="Autoriser la Caméra" onPress={requestPermission} />
+          <Button title={t.eyeImage.skipAllPhotos} onPress={() => router.push('/screening-results')} variant="ghost" />
         </View>
       </SafeAreaView>
     );
@@ -47,7 +55,7 @@ export default function EyeCaptureScreen() {
           quality: 0.8,
           base64: false,
         });
-        
+
         if (photo) {
           setPreviewImage(photo.uri);
         }
@@ -62,25 +70,39 @@ export default function EyeCaptureScreen() {
     setPreviewImage(null);
   };
 
-  const handleUsePhoto = () => {
-    if (!previewImage) return;
+  const finishCapture = (rightUri: string | null, leftUri: string | null) => {
+    if (!rightUri && !leftUri) {
+      router.push('/screening-results');
+      return;
+    }
+    const now = Date.now();
+    updateEyeImages({
+      rightEye: rightUri ? { imageUri: rightUri, capturedAt: now } : undefined,
+      leftEye: leftUri ? { imageUri: leftUri, capturedAt: now } : undefined,
+      reviewStatus: 'pending',
+    });
+    router.push('/eye-photo-review');
+  };
 
+  const commitEye = (uri: string | null) => {
     if (currentEye === 'right') {
-      setRightEyeImage(previewImage);
+      setRightEyeImage(uri);
       setPreviewImage(null);
       setCurrentEye('left');
     } else {
-      setLeftEyeImage(previewImage);
+      setLeftEyeImage(uri);
       setPreviewImage(null);
-      router.push('/ai-processing');
+      finishCapture(rightEyeImage, uri);
     }
   };
 
-  const getQualityScore = (): number => {
-    return Math.random() > 0.3 ? 0.8 : 0.4;
+  const handleUsePhoto = () => {
+    if (!previewImage) return;
+    commitEye(previewImage);
   };
 
-  const isQualityGood = getQualityScore() >= 0.6;
+  const handleSkipEye = () => commitEye(null);
+  const handleSkipAll = () => router.push('/screening-results');
 
   if (previewImage) {
     return (
@@ -95,40 +117,24 @@ export default function EyeCaptureScreen() {
 
           <View style={styles.previewContainer}>
             <Image source={{ uri: previewImage }} style={styles.previewImage} />
-            
-            <View style={[styles.qualityBadge, { backgroundColor: isQualityGood ? Colors.successLight : Colors.warningLight }]}>
-              {isQualityGood ? (
-                <CheckCircle2 size={20} color={Colors.success} />
-              ) : (
-                <AlertCircle size={20} color={Colors.warning} />
-              )}
-              <Text style={[styles.qualityText, { color: isQualityGood ? Colors.success : Colors.warning }]}>
-                {isQualityGood ? t.eyeImage.qualityGood : t.eyeImage.qualityPoor}
-              </Text>
+
+            <View style={styles.savedBadge}>
+              <CheckCircle2 size={20} color={Colors.success} />
+              <Text style={styles.savedBadgeText}>{t.eyeImage.photoSaved}</Text>
             </View>
-            
-            {!isQualityGood && (
-              <View style={styles.warningBox}>
-                <Text style={styles.warningText}>{t.eyeImage.qualityPoorReason}</Text>
-              </View>
-            )}
+
+            <View style={styles.warningBox}>
+              <Text style={styles.warningText}>{t.eyeImage.qualityPoorReason}</Text>
+            </View>
           </View>
 
           <View style={styles.actions}>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.retakeButton]}
-              onPress={handleRetake}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={[styles.actionButton, styles.retakeButton]} onPress={handleRetake} activeOpacity={0.7}>
               <RotateCcw size={20} color={Colors.text} />
               <Text style={styles.retakeButtonText}>{t.eyeImage.retake}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.actionButton, styles.useButton]}
-              onPress={handleUsePhoto}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={[styles.actionButton, styles.useButton]} onPress={handleUsePhoto} activeOpacity={0.7}>
               <CheckCircle2 size={20} color={Colors.surface} />
               <Text style={styles.useButtonText}>{t.eyeImage.usePhoto}</Text>
             </TouchableOpacity>
@@ -141,6 +147,10 @@ export default function EyeCaptureScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
+        <View style={styles.stepBarWrap}>
+          <StepProgress steps={steps} currentStepIndex={3} />
+        </View>
+
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <ArrowLeft size={24} color={Colors.surface} />
@@ -151,16 +161,18 @@ export default function EyeCaptureScreen() {
               {currentEye === 'right' ? t.results.rightEye : t.results.leftEye}
             </Text>
           </View>
-          <View style={styles.headerSpacer} />
+          {currentEye === 'right' ? (
+            <TouchableOpacity onPress={handleSkipAll} style={styles.headerSkipButton}>
+              <SkipForward size={20} color={Colors.surface} />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.headerSpacer} />
+          )}
         </View>
 
         <View style={styles.cameraContainer}>
           {Platform.OS !== 'web' ? (
-            <CameraView
-              ref={cameraRef}
-              style={styles.camera}
-              facing="back"
-            >
+            <CameraView ref={cameraRef} style={styles.camera} facing="back">
               <View style={styles.cameraOverlay}>
                 <View style={styles.aimCircle} />
               </View>
@@ -176,29 +188,30 @@ export default function EyeCaptureScreen() {
         </View>
 
         <View style={styles.instructions}>
+          <Text style={styles.optionalNote}>{t.eyeImage.optionalNote}</Text>
           <View style={styles.instructionItem}>
-            <CheckCircle2 size={20} color={Colors.success} />
+            <CheckCircle2 size={18} color={Colors.success} />
             <Text style={styles.instructionText}>{t.eyeImage.goodLighting}</Text>
           </View>
           <View style={styles.instructionItem}>
-            <CheckCircle2 size={20} color={Colors.success} />
+            <CheckCircle2 size={18} color={Colors.success} />
             <Text style={styles.instructionText}>{t.eyeImage.holdSteady}</Text>
           </View>
           <View style={styles.instructionItem}>
-            <CheckCircle2 size={20} color={Colors.success} />
+            <CheckCircle2 size={18} color={Colors.success} />
             <Text style={styles.instructionText}>{t.eyeImage.openEyeWide}</Text>
           </View>
         </View>
 
         <View style={styles.captureButtonContainer}>
-          <TouchableOpacity
-            style={styles.captureButton}
-            onPress={takePicture}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity style={styles.captureButton} onPress={takePicture} activeOpacity={0.7}>
             <View style={styles.captureButtonInner} />
           </TouchableOpacity>
           <Text style={styles.captureButtonText}>{t.eyeImage.capturePhoto}</Text>
+
+          <TouchableOpacity onPress={handleSkipEye} activeOpacity={0.7} style={styles.skipEyeButton}>
+            <Text style={styles.skipEyeText}>{t.eyeImage.skipEye}</Text>
+          </TouchableOpacity>
         </View>
 
         {(rightEyeImage || leftEyeImage) && (
@@ -221,21 +234,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000',
   },
+  stepBarWrap: {
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.sm,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
   permissionContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: Spacing.xl,
     backgroundColor: Colors.background,
-    gap: 16,
+    gap: Spacing.lg,
   },
   permissionTitle: {
-    fontSize: 20,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: Colors.text,
   },
   permissionText: {
-    fontSize: 14,
+    fontSize: FontSize.base,
     color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
@@ -243,9 +261,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 20,
-    paddingHorizontal: 24,
-    paddingBottom: 16,
+    paddingTop: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.lg,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   backButton: {
@@ -261,15 +279,21 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 40,
   },
+  headerSkipButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: {
-    fontSize: 20,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: Colors.surface,
     textAlign: 'center',
     marginBottom: 4,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: FontSize.base,
     color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
   },
@@ -297,31 +321,37 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 16,
+    gap: Spacing.lg,
   },
   webCameraText: {
-    fontSize: 14,
+    fontSize: FontSize.base,
     color: Colors.textSecondary,
   },
   instructions: {
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    padding: 16,
-    gap: 12,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+  },
+  optionalNote: {
+    fontSize: FontSize.xs,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontStyle: 'italic',
+    marginBottom: Spacing.xs,
   },
   instructionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Spacing.md,
   },
   instructionText: {
-    fontSize: 14,
+    fontSize: FontSize.base,
     color: Colors.surface,
   },
   captureButtonContainer: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: Spacing.xl,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    gap: 8,
+    gap: Spacing.sm,
   },
   captureButton: {
     width: 80,
@@ -340,15 +370,26 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   captureButtonText: {
-    fontSize: 14,
+    fontSize: FontSize.base,
     fontWeight: '600',
     color: Colors.surface,
+  },
+  skipEyeButton: {
+    marginTop: Spacing.sm,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+  },
+  skipEyeText: {
+    fontSize: FontSize.base,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.75)',
+    textDecorationLine: 'underline',
   },
   progress: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
-    paddingBottom: 16,
+    gap: Spacing.md,
+    paddingBottom: Spacing.lg,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   progressDot: {
@@ -369,40 +410,42 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'contain',
   },
-  qualityBadge: {
+  savedBadge: {
     position: 'absolute',
     top: 20,
     left: 20,
     right: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    padding: 12,
-    borderRadius: 8,
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: Radius.sm,
+    backgroundColor: Colors.successLight,
   },
-  qualityText: {
-    fontSize: 14,
+  savedBadgeText: {
+    fontSize: FontSize.base,
     fontWeight: '700',
+    color: Colors.success,
   },
   warningBox: {
     position: 'absolute',
     bottom: 20,
     left: 20,
     right: 20,
-    backgroundColor: Colors.warningLight,
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: Colors.infoLight,
+    padding: Spacing.md,
+    borderRadius: Radius.sm,
     borderLeftWidth: 4,
-    borderLeftColor: Colors.warning,
+    borderLeftColor: Colors.info,
   },
   warningText: {
-    fontSize: 14,
+    fontSize: FontSize.base,
     color: Colors.text,
   },
   actions: {
     flexDirection: 'row',
-    gap: 12,
-    padding: 24,
+    gap: Spacing.md,
+    padding: Spacing.xl,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   actionButton: {
@@ -410,15 +453,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: 12,
+    gap: Spacing.sm,
+    paddingVertical: Spacing.lg,
+    borderRadius: Radius.md,
   },
   retakeButton: {
     backgroundColor: Colors.surface,
   },
   retakeButtonText: {
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontWeight: '700',
     color: Colors.text,
   },
@@ -426,18 +469,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   useButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.surface,
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-  },
-  buttonText: {
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontWeight: '700',
     color: Colors.surface,
   },
