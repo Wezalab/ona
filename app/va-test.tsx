@@ -1,55 +1,47 @@
 import { useRouter } from 'expo-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, Animated } from 'react-native';
 import { Eye, ArrowRight } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors from '@/constants/colors';
+import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
 import type { VisualAcuityResult } from '@/contexts/AppContext';
+import {
+  SNELLEN_DENOMINATORS,
+  TRIALS_PER_LEVEL,
+  CORRECT_TO_PASS,
+  INCORRECT_TO_FAIL,
+  computeOptotypeHeightMm,
+  buildEyeResult,
+  snellenLabel,
+  type EyeVisualAcuity,
+} from '@/constants/visualAcuity';
+import { Badge, StepProgress } from '@/components/ui';
 
 type Direction = 'up' | 'down' | 'left' | 'right';
+type Answer = Direction | 'cantSee';
+type TrialOutcome = 'correct' | 'incorrect' | null;
 
-interface TestLevel {
-  size: number;
-  level: string;
-}
-
-const TEST_LEVELS: TestLevel[] = [
-  { size: 120, level: '6/60' },
-  { size: 90, level: '6/36' },
-  { size: 60, level: '6/24' },
-  { size: 40, level: '6/18' },
-  { size: 30, level: '6/12' },
-  { size: 20, level: '6/9' },
-  { size: 15, level: '6/6' },
-];
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function VATestScreen() {
   const router = useRouter();
-  const { t, updateVisualAcuity } = useApp();
-  
+  const { t, updateVisualAcuity, calibration } = useApp();
+
   const [currentEye, setCurrentEye] = useState<'right' | 'left'>('right');
-  const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
-  const [totalAnswers, setTotalAnswers] = useState(0);
+  const [levelIndex, setLevelIndex] = useState(0);
+  const [lastPassedIndex, setLastPassedIndex] = useState(-1);
+  const [trialOutcomes, setTrialOutcomes] = useState<TrialOutcome[]>(Array(TRIALS_PER_LEVEL).fill(null));
   const [currentDirection, setCurrentDirection] = useState<Direction>('up');
-  const [rightEyeScore, setRightEyeScore] = useState(0);
-  
+  const rightEyeResultRef = useRef<EyeVisualAcuity | null>(null);
+
   const [rotateAnim] = useState(new Animated.Value(0));
 
-  const generateNewDirection = useCallback(() => {
-    const directions: Direction[] = ['up', 'down', 'left', 'right'];
-    const randomDirection = directions[Math.floor(Math.random() * directions.length)];
-    setCurrentDirection(randomDirection);
-    
-    Animated.timing(rotateAnim, {
-      toValue: getRotationValue(randomDirection),
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  }, [rotateAnim]);
-
+  // Redirect back if this screen was reached without completing calibration.
   useEffect(() => {
-    generateNewDirection();
-  }, [generateNewDirection]);
+    if (!calibration) {
+      router.replace('/va-calibration');
+    }
+  }, [calibration, router]);
 
   const getRotationValue = (direction: Direction): number => {
     switch (direction) {
@@ -61,51 +53,79 @@ export default function VATestScreen() {
     }
   };
 
-  const handleAnswer = (answer: Direction | 'cantSee') => {
-    if (answer === 'cantSee') {
-      finishEye();
-      return;
-    }
+  const generateNewDirection = useCallback(() => {
+    const directions: Direction[] = ['up', 'down', 'left', 'right'];
+    const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+    setCurrentDirection(randomDirection);
 
-    const isCorrect = answer === currentDirection;
-    const newTotalAnswers = totalAnswers + 1;
-    setTotalAnswers(newTotalAnswers);
+    Animated.timing(rotateAnim, {
+      toValue: getRotationValue(randomDirection),
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [rotateAnim]);
 
-    if (isCorrect && newTotalAnswers >= 2 && currentLevelIndex < TEST_LEVELS.length - 1) {
-      setCurrentLevelIndex(prev => prev + 1);
-      setTotalAnswers(0);
-    } else if (!isCorrect && newTotalAnswers >= 2) {
-      finishEye();
-    } else {
-      generateNewDirection();
-    }
+  useEffect(() => {
+    generateNewDirection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const resetLevelState = () => {
+    setTrialOutcomes(Array(TRIALS_PER_LEVEL).fill(null));
   };
 
-  const finishEye = () => {
-    const score = currentLevelIndex;
-    
+  const finishEye = useCallback((denominator: number, belowChart: boolean) => {
+    const result = buildEyeResult(denominator, belowChart);
+
     if (currentEye === 'right') {
-      setRightEyeScore(score);
+      rightEyeResultRef.current = result;
       setCurrentEye('left');
-      setCurrentLevelIndex(0);
-      setTotalAnswers(0);
+      setLevelIndex(0);
+      setLastPassedIndex(-1);
+      resetLevelState();
       generateNewDirection();
-    } else {
-      const leftEyeScore = score;
-      
-      const result: VisualAcuityResult = {
-        rightEye: {
-          score: rightEyeScore,
-          risk: rightEyeScore < 3 ? 'high' : rightEyeScore < 5 ? 'medium' : 'low',
-        },
-        leftEye: {
-          score: leftEyeScore,
-          risk: leftEyeScore < 3 ? 'high' : leftEyeScore < 5 ? 'medium' : 'low',
-        },
+    } else if (calibration) {
+      const finalResult: VisualAcuityResult = {
+        distanceMeters: calibration.testDistanceMeters,
+        rightEye: rightEyeResultRef.current ?? result,
+        leftEye: result,
       };
-      
-      updateVisualAcuity(result);
+      updateVisualAcuity(finalResult);
       router.push('/va-result');
+    }
+  }, [currentEye, calibration, generateNewDirection, router, updateVisualAcuity]);
+
+  const handleAnswer = (answer: Answer) => {
+    const isCorrect = answer !== 'cantSee' && answer === currentDirection;
+    const filledCount = trialOutcomes.filter((o) => o !== null).length;
+    const nextOutcomes = [...trialOutcomes];
+    if (filledCount < TRIALS_PER_LEVEL) {
+      nextOutcomes[filledCount] = isCorrect ? 'correct' : 'incorrect';
+    }
+    setTrialOutcomes(nextOutcomes);
+
+    const correctCount = nextOutcomes.filter((o) => o === 'correct').length;
+    const incorrectCount = nextOutcomes.filter((o) => o === 'incorrect').length;
+
+    if (correctCount >= CORRECT_TO_PASS) {
+      // Line passed — advance to the next (smaller) line, or finish if this was the last.
+      if (levelIndex >= SNELLEN_DENOMINATORS.length - 1) {
+        finishEye(SNELLEN_DENOMINATORS[levelIndex], false);
+      } else {
+        setLastPassedIndex(levelIndex);
+        setLevelIndex((prev) => prev + 1);
+        resetLevelState();
+        generateNewDirection();
+      }
+    } else if (incorrectCount >= INCORRECT_TO_FAIL) {
+      // Line failed — acuity is the last line passed (or below-chart if none).
+      if (lastPassedIndex === -1) {
+        finishEye(SNELLEN_DENOMINATORS[0], true);
+      } else {
+        finishEye(SNELLEN_DENOMINATORS[lastPassedIndex], false);
+      }
+    } else {
+      generateNewDirection();
     }
   };
 
@@ -114,35 +134,67 @@ export default function VATestScreen() {
     outputRange: ['0deg', '90deg', '180deg', '270deg'],
   });
 
-  const currentLevel = TEST_LEVELS[currentLevelIndex];
-  const screenWidth = Dimensions.get('window').width;
-  const optotypeSize = Math.min(currentLevel.size, screenWidth * 0.4);
+  if (!calibration) {
+    return null;
+  }
+
+  const currentDenominator = SNELLEN_DENOMINATORS[levelIndex];
+  const optotypeHeightMm = computeOptotypeHeightMm(currentDenominator, calibration.testDistanceMeters);
+  const optotypeSizePt = Math.max(14, Math.min(optotypeHeightMm * calibration.pixelsPerMM, SCREEN_WIDTH * 0.55));
+
+  const steps = [
+    t.screeningFlow.stepPatient,
+    t.screeningFlow.stepCalibration,
+    t.screeningFlow.stepVisionTest,
+    t.screeningFlow.stepPhotos,
+    t.screeningFlow.stepResults,
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
+        <View style={styles.stepBar}>
+          <StepProgress steps={steps} currentStepIndex={2} />
+        </View>
+
         <View style={styles.header}>
           <View style={styles.eyeIndicator}>
-            <Eye size={32} color={currentEye === 'right' ? Colors.info : Colors.warning} />
+            <Eye size={28} color={currentEye === 'right' ? Colors.info : Colors.warning} />
             <Text style={styles.eyeText}>
               {currentEye === 'right' ? t.visualAcuity.coverEye + ' ' + t.results.leftEye : t.visualAcuity.coverEye + ' ' + t.results.rightEye}
             </Text>
           </View>
-          <Text style={styles.levelText}>Niveau: {currentLevel.level}</Text>
+
+          <View style={styles.metaRow}>
+            <Badge label={`${t.visualAcuity.lineLabel} ${snellenLabel(currentDenominator)}`} tone="primary" />
+            <View style={styles.trialDots}>
+              {trialOutcomes.map((outcome, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.trialDot,
+                    outcome === 'correct' && styles.trialDotCorrect,
+                    outcome === 'incorrect' && styles.trialDotIncorrect,
+                  ]}
+                />
+              ))}
+            </View>
+          </View>
+
           <Text style={styles.instructions}>{t.visualAcuity.testInstructions}</Text>
         </View>
 
         <View style={styles.content}>
           <Text style={styles.question}>{t.visualAcuity.whichWayPoints}</Text>
-          
+
           <View style={styles.optotypeContainer}>
-            <Animated.Text 
+            <Animated.Text
               style={[
                 styles.optotype,
-                { 
-                  fontSize: optotypeSize,
+                {
+                  fontSize: optotypeSizePt,
                   transform: [{ rotate: rotation }],
-                }
+                },
               ]}
             >
               E
@@ -152,52 +204,32 @@ export default function VATestScreen() {
 
         <View style={styles.controls}>
           <View style={styles.directionsRow}>
-            <TouchableOpacity
-              style={styles.directionButton}
-              onPress={() => handleAnswer('up')}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.directionButton} onPress={() => handleAnswer('up')} activeOpacity={0.7}>
               <Text style={styles.directionText}>↑</Text>
               <Text style={styles.directionLabel}>{t.visualAcuity.up}</Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.directionsRow}>
-            <TouchableOpacity
-              style={styles.directionButton}
-              onPress={() => handleAnswer('left')}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.directionButton} onPress={() => handleAnswer('left')} activeOpacity={0.7}>
               <Text style={styles.directionText}>←</Text>
               <Text style={styles.directionLabel}>{t.visualAcuity.left}</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.directionButton}
-              onPress={() => handleAnswer('right')}
-              activeOpacity={0.7}
-            >
+
+            <TouchableOpacity style={styles.directionButton} onPress={() => handleAnswer('right')} activeOpacity={0.7}>
               <Text style={styles.directionText}>→</Text>
               <Text style={styles.directionLabel}>{t.visualAcuity.right}</Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.directionsRow}>
-            <TouchableOpacity
-              style={styles.directionButton}
-              onPress={() => handleAnswer('down')}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.directionButton} onPress={() => handleAnswer('down')} activeOpacity={0.7}>
               <Text style={styles.directionText}>↓</Text>
               <Text style={styles.directionLabel}>{t.visualAcuity.down}</Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={styles.cantSeeButton}
-            onPress={() => handleAnswer('cantSee')}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity style={styles.cantSeeButton} onPress={() => handleAnswer('cantSee')} activeOpacity={0.7}>
             <Text style={styles.cantSeeText}>{t.visualAcuity.cantSee}</Text>
             {currentEye === 'right' ? <ArrowRight size={20} color={Colors.surface} /> : null}
           </TouchableOpacity>
@@ -215,34 +247,54 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  stepBar: {
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+  },
   header: {
-    paddingTop: 20,
-    paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.lg,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
-    gap: 8,
+    gap: Spacing.sm,
   },
   eyeIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Spacing.md,
     alignSelf: 'center',
   },
   eyeText: {
-    fontSize: 18,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: Colors.text,
   },
-  levelText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    textAlign: 'center',
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.md,
+  },
+  trialDots: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  trialDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: Colors.border,
+  },
+  trialDotCorrect: {
+    backgroundColor: Colors.success,
+  },
+  trialDotIncorrect: {
+    backgroundColor: Colors.danger,
   },
   instructions: {
-    fontSize: 12,
+    fontSize: FontSize.xs,
     color: Colors.textSecondary,
     textAlign: 'center',
   },
@@ -250,11 +302,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    gap: 40,
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.xxxl,
   },
   question: {
-    fontSize: 18,
+    fontSize: FontSize.lg,
     fontWeight: '600',
     color: Colors.text,
     textAlign: 'center',
@@ -269,23 +321,23 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   controls: {
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    gap: 12,
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.xl,
+    gap: Spacing.md,
   },
   directionsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
+    gap: Spacing.md,
   },
   directionButton: {
     width: 100,
     aspectRatio: 1,
     backgroundColor: Colors.primary,
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: Spacing.xs,
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -297,22 +349,22 @@ const styles = StyleSheet.create({
     color: Colors.surface,
   },
   directionLabel: {
-    fontSize: 12,
+    fontSize: FontSize.xs,
     fontWeight: '600',
     color: Colors.surface,
   },
   cantSeeButton: {
     flexDirection: 'row',
     backgroundColor: Colors.textSecondary,
-    borderRadius: 16,
-    paddingVertical: 16,
+    borderRadius: Radius.lg,
+    paddingVertical: Spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 8,
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
   },
   cantSeeText: {
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontWeight: '700',
     color: Colors.surface,
   },
