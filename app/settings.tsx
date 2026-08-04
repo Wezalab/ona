@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Alert } from 'react-native';
-import { Languages, RefreshCw, Trash2, ArrowLeft, Calendar } from 'lucide-react-native';
+import { Languages, RefreshCw, Trash2, Calendar } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors from '@/constants/colors';
+import Colors, { Radius, Spacing } from '@/constants/colors';
+import { Button, ScreenHeader, Section } from '@/components/ui';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -65,20 +66,10 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <ArrowLeft size={24} color={Colors.surface} />
-          </TouchableOpacity>
-          <Text style={styles.title}>{t.settings.title}</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <ScreenHeader variant="bar" title={t.settings.title} onBack={() => router.back()} />
 
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Languages size={24} color={Colors.primary} />
-              <Text style={styles.sectionTitle}>{t.settings.language}</Text>
-            </View>
+          <Section icon={Languages} title={t.settings.language}>
             <View style={styles.languageOptions}>
               {languageOptions.map((option) => (
                 <TouchableOpacity
@@ -93,38 +84,24 @@ export default function SettingsScreen() {
                 </TouchableOpacity>
               ))}
             </View>
-          </View>
+          </Section>
 
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <RefreshCw size={24} color={Colors.info} />
-              <Text style={styles.sectionTitle}>{t.settings.dataSync}</Text>
-            </View>
+          <Section icon={RefreshCw} iconColor={Colors.info} title={t.settings.dataSync}>
             <View style={styles.syncInfo}>
               <Calendar size={16} color={Colors.textSecondary} />
               <Text style={styles.syncText}>
                 {t.settings.lastSync}: {formatLastSync()}
               </Text>
             </View>
-            <TouchableOpacity style={styles.syncButton} onPress={handleSync} activeOpacity={0.7}>
-              <RefreshCw size={20} color={Colors.surface} />
-              <Text style={styles.syncButtonText}>{t.settings.syncNow}</Text>
-            </TouchableOpacity>
-          </View>
+            <Button title={t.settings.syncNow} onPress={handleSync} variant="secondary" icon={RefreshCw} size="md" />
+          </Section>
 
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Trash2 size={24} color={Colors.danger} />
-              <Text style={styles.sectionTitle}>{t.settings.clearData}</Text>
-            </View>
+          <Section icon={Trash2} iconColor={Colors.danger} title={t.settings.clearData}>
             <Text style={styles.warningText}>
               Cette action supprimera tous les dépistages enregistrés localement. Cette action est irréversible.
             </Text>
-            <TouchableOpacity style={styles.dangerButton} onPress={handleClearData} activeOpacity={0.7}>
-              <Trash2 size={20} color={Colors.surface} />
-              <Text style={styles.dangerButtonText}>{t.settings.clearData}</Text>
-            </TouchableOpacity>
-          </View>
+            <Button title={t.settings.clearData} onPress={handleClearData} variant="danger" icon={Trash2} size="md" />
+          </Section>
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -140,59 +117,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.primary,
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 24,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.surface,
-  },
-  placeholder: {
-    width: 40,
-  },
   content: {
     flex: 1,
   },
   contentContainer: {
-    padding: 24,
-    gap: 32,
-  },
-  section: {
-    gap: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
+    padding: Spacing.xl,
+    gap: Spacing.xxl,
   },
   languageOptions: {
-    gap: 12,
+    gap: Spacing.md,
   },
   languageOption: {
     backgroundColor: Colors.surface,
     borderWidth: 2,
     borderColor: Colors.border,
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    borderRadius: Radius.md,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
   },
   languageOptionSelected: {
     backgroundColor: Colors.primaryLight,
@@ -209,46 +150,18 @@ const styles = StyleSheet.create({
   syncInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     backgroundColor: Colors.surface,
-    padding: 12,
-    borderRadius: 8,
+    padding: Spacing.md,
+    borderRadius: Radius.sm,
   },
   syncText: {
     fontSize: 14,
     color: Colors.textSecondary,
   },
-  syncButton: {
-    flexDirection: 'row',
-    backgroundColor: Colors.info,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  syncButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.surface,
-  },
   warningText: {
     fontSize: 14,
     color: Colors.textSecondary,
     lineHeight: 20,
-  },
-  dangerButton: {
-    flexDirection: 'row',
-    backgroundColor: Colors.danger,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  dangerButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.surface,
   },
 });

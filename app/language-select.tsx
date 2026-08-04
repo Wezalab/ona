@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Image } from 'react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors from '@/constants/colors';
+import Colors, { FontSize, Spacing } from '@/constants/colors';
 import type { Language } from '@/constants/translations';
+import { SelectableCard } from '@/components/ui';
 
 export default function LanguageSelectScreen() {
   const router = useRouter();
@@ -30,48 +31,10 @@ export default function LanguageSelectScreen() {
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, selected === 'en' && styles.buttonSelected]}
-            onPress={() => handleLanguageSelect('en')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.buttonText, selected === 'en' && styles.buttonTextSelected]}>
-              English
-            </Text>
-            <Text style={styles.buttonSubtext}>English</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, selected === 'fr' && styles.buttonSelected]}
-            onPress={() => handleLanguageSelect('fr')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.buttonText, selected === 'fr' && styles.buttonTextSelected]}>
-              Français
-            </Text>
-            <Text style={styles.buttonSubtext}>French</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, selected === 'sw' && styles.buttonSelected]}
-            onPress={() => handleLanguageSelect('sw')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.buttonText, selected === 'sw' && styles.buttonTextSelected]}>
-              Kiswahili
-            </Text>
-            <Text style={styles.buttonSubtext}>Swahili</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, selected === 'ln' && styles.buttonSelected]}
-            onPress={() => handleLanguageSelect('ln')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.buttonText, selected === 'ln' && styles.buttonTextSelected]}>
-              Lingala
-            </Text>
-            <Text style={styles.buttonSubtext}>Lingala</Text>
-          </TouchableOpacity>
+          <SelectableCard title="English" subtitle="English" selected={selected === 'en'} onPress={() => handleLanguageSelect('en')} />
+          <SelectableCard title="Français" subtitle="French" selected={selected === 'fr'} onPress={() => handleLanguageSelect('fr')} />
+          <SelectableCard title="Kiswahili" subtitle="Swahili" selected={selected === 'sw'} onPress={() => handleLanguageSelect('sw')} />
+          <SelectableCard title="Lingala" subtitle="Lingala" selected={selected === 'ln'} onPress={() => handleLanguageSelect('ln')} />
         </View>
       </View>
     </SafeAreaView>
@@ -89,9 +52,9 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    paddingTop: 80,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingTop: 72,
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.xxl,
     backgroundColor: Colors.primary,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
@@ -99,56 +62,25 @@ const styles = StyleSheet.create({
   logo: {
     width: 200,
     height: 100,
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
     color: Colors.surface,
-    marginTop: 20,
-    marginBottom: 12,
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.md,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: FontSize.sm,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
     lineHeight: 20,
   },
   buttonContainer: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-    gap: 16,
-  },
-  button: {
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    paddingVertical: 24,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  buttonSelected: {
-    backgroundColor: Colors.primaryLight,
-    borderColor: Colors.primary,
-  },
-  buttonText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  buttonTextSelected: {
-    color: Colors.surface,
-  },
-  buttonSubtext: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.xxl,
+    gap: Spacing.lg,
   },
 });

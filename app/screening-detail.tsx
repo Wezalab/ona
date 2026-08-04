@@ -1,10 +1,13 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Platform, Alert } from 'react-native';
-import { ArrowLeft, FileText, User, Eye, Activity, Printer } from 'lucide-react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, Platform, Alert, TouchableOpacity } from 'react-native';
+import { FileText, User, Eye, Camera, Printer } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors from '@/constants/colors';
+import type { RiskLevel } from '@/constants/visualAcuity';
+import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { Badge, Card, EmptyState, ScreenHeader, Section } from '@/components/ui';
+import type { BadgeTone } from '@/components/ui';
 
 export default function ScreeningDetailScreen() {
   const router = useRouter();
@@ -17,16 +20,8 @@ export default function ScreeningDetailScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <ArrowLeft size={24} color={Colors.surface} />
-            </TouchableOpacity>
-            <Text style={styles.title}>Screening Details</Text>
-            <View style={styles.placeholder} />
-          </View>
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Screening not found</Text>
-          </View>
+          <ScreenHeader variant="bar" title="Screening Details" onBack={() => router.back()} />
+          <EmptyState icon={FileText} title="Screening not found" />
         </View>
       </SafeAreaView>
     );
@@ -43,21 +38,15 @@ export default function ScreeningDetailScreen() {
     });
   };
 
-  const getRiskColor = (risk: 'low' | 'medium' | 'high') => {
-    switch (risk) {
-      case 'low': return Colors.success;
-      case 'medium': return Colors.warning;
-      case 'high': return Colors.danger;
-    }
-  };
-
-  const getRiskText = (risk: 'low' | 'medium' | 'high') => {
+  const getRiskText = (risk: RiskLevel) => {
     switch (risk) {
       case 'low': return t.results.riskLow;
       case 'medium': return t.results.riskMedium;
       case 'high': return t.results.riskHigh;
     }
   };
+
+  const hasPhotos = !!(screening.eyeImages?.rightEye || screening.eyeImages?.leftEye);
 
   const handlePrint = async () => {
     try {
@@ -103,42 +92,29 @@ export default function ScreeningDetailScreen() {
 
           ${screening.visualAcuity ? `
           <div class="section">
-            <div class="section-title">Visual Acuity Results</div>
+            <div class="section-title">Visual Acuity Results (${screening.visualAcuity.distanceMeters}m test distance)</div>
             <div class="field">
               <div class="field-label">Right Eye</div>
               <div class="field-value">
-                Score: ${screening.visualAcuity.rightEye.score}/10<br>
+                Snellen: ${screening.visualAcuity.rightEye.belowChart ? '&lt; ' : ''}${screening.visualAcuity.rightEye.snellen} (decimal ${screening.visualAcuity.rightEye.decimal})<br>
                 Risk: <span class="risk-badge risk-${screening.visualAcuity.rightEye.risk}">${getRiskText(screening.visualAcuity.rightEye.risk)}</span>
               </div>
             </div>
             <div class="field">
               <div class="field-label">Left Eye</div>
               <div class="field-value">
-                Score: ${screening.visualAcuity.leftEye.score}/10<br>
+                Snellen: ${screening.visualAcuity.leftEye.belowChart ? '&lt; ' : ''}${screening.visualAcuity.leftEye.snellen} (decimal ${screening.visualAcuity.leftEye.decimal})<br>
                 Risk: <span class="risk-badge risk-${screening.visualAcuity.leftEye.risk}">${getRiskText(screening.visualAcuity.leftEye.risk)}</span>
               </div>
             </div>
           </div>
           ` : ''}
 
-          ${screening.eyeImages ? `
+          ${hasPhotos ? `
           <div class="section">
-            <div class="section-title">Eye Image Analysis</div>
+            <div class="section-title">Eye Photos</div>
             <div class="field">
-              <div class="field-label">Right Eye</div>
-              <div class="field-value">
-                Quality: ${screening.eyeImages.rightEye.quality === 'good' ? 'Good' : 'Poor'}<br>
-                AI Score: ${screening.eyeImages.rightEye.aiScore}/100<br>
-                Risk: <span class="risk-badge risk-${screening.eyeImages.rightEye.risk}">${getRiskText(screening.eyeImages.rightEye.risk)}</span>
-              </div>
-            </div>
-            <div class="field">
-              <div class="field-label">Left Eye</div>
-              <div class="field-value">
-                Quality: ${screening.eyeImages.leftEye.quality === 'good' ? 'Good' : 'Poor'}<br>
-                AI Score: ${screening.eyeImages.leftEye.aiScore}/100<br>
-                Risk: <span class="risk-badge risk-${screening.eyeImages.leftEye.risk}">${getRiskText(screening.eyeImages.leftEye.risk)}</span>
-              </div>
+              <div class="field-value">Eye photos were captured and are pending specialist review. They do not affect the risk score above, which is based solely on the measured Visual Acuity result.</div>
             </div>
           </div>
           ` : ''}
@@ -192,23 +168,20 @@ export default function ScreeningDetailScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <ArrowLeft size={24} color={Colors.surface} />
-          </TouchableOpacity>
-          <Text style={styles.title}>Screening Details</Text>
-          <TouchableOpacity onPress={handlePrint} style={styles.printButton}>
-            <Printer size={24} color={Colors.surface} />
-          </TouchableOpacity>
-        </View>
+        <ScreenHeader
+          variant="bar"
+          title="Screening Details"
+          onBack={() => router.back()}
+          rightSlot={
+            <TouchableOpacity onPress={handlePrint} style={styles.printButton}>
+              <Printer size={24} color={Colors.surface} />
+            </TouchableOpacity>
+          }
+        />
 
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <User size={20} color={Colors.primary} />
-              <Text style={styles.sectionTitle}>Patient Information</Text>
-            </View>
-            <View style={styles.infoCard}>
+          <Section icon={User} title="Patient Information">
+            <Card>
               {screening.patientInfo.patientId && (
                 <View style={styles.infoRow}>
                   <Text style={styles.infoLabel}>Patient ID:</Text>
@@ -239,84 +212,44 @@ export default function ScreeningDetailScreen() {
                   <Text style={styles.infoValue}>{screening.patientInfo.notes}</Text>
                 </View>
               )}
-            </View>
-          </View>
+            </Card>
+          </Section>
 
           {screening.visualAcuity && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Eye size={20} color={Colors.primary} />
-                <Text style={styles.sectionTitle}>Visual Acuity Results</Text>
-              </View>
-              <View style={styles.resultsCard}>
-                <View style={styles.eyeResult}>
-                  <Text style={styles.eyeLabel}>{t.results.rightEye}</Text>
-                  <Text style={styles.scoreText}>Score: {screening.visualAcuity.rightEye.score}/10</Text>
-                  <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(screening.visualAcuity.rightEye.risk)}20` }]}>
-                    <Text style={[styles.riskText, { color: getRiskColor(screening.visualAcuity.rightEye.risk) }]}>
-                      {getRiskText(screening.visualAcuity.rightEye.risk)}
-                    </Text>
+            <Section icon={Eye} title={`${t.results.visualAcuityResults} · ${screening.visualAcuity.distanceMeters}m`}>
+              <Card>
+                {[
+                  { label: t.results.rightEye, result: screening.visualAcuity.rightEye },
+                  { label: t.results.leftEye, result: screening.visualAcuity.leftEye },
+                ].map(({ label, result }, index) => (
+                  <View key={label}>
+                    {index > 0 && <View style={styles.divider} />}
+                    <View style={styles.eyeResult}>
+                      <Text style={styles.eyeLabel}>{label}</Text>
+                      <Text style={styles.scoreText}>
+                        {result.belowChart ? `< ${result.snellen}` : result.snellen} ({result.decimal})
+                      </Text>
+                      <Badge label={getRiskText(result.risk)} tone={result.risk as BadgeTone} size="sm" />
+                    </View>
                   </View>
-                </View>
-                <View style={styles.divider} />
-                <View style={styles.eyeResult}>
-                  <Text style={styles.eyeLabel}>{t.results.leftEye}</Text>
-                  <Text style={styles.scoreText}>Score: {screening.visualAcuity.leftEye.score}/10</Text>
-                  <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(screening.visualAcuity.leftEye.risk)}20` }]}>
-                    <Text style={[styles.riskText, { color: getRiskColor(screening.visualAcuity.leftEye.risk) }]}>
-                      {getRiskText(screening.visualAcuity.leftEye.risk)}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </View>
+                ))}
+              </Card>
+            </Section>
           )}
 
-          {screening.eyeImages && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Activity size={20} color={Colors.primary} />
-                <Text style={styles.sectionTitle}>Eye Image Analysis</Text>
-              </View>
-              <View style={styles.resultsCard}>
-                <View style={styles.eyeResult}>
-                  <Text style={styles.eyeLabel}>{t.results.rightEye}</Text>
-                  <Text style={styles.detailText}>Quality: {screening.eyeImages.rightEye.quality === 'good' ? 'Good' : 'Poor'}</Text>
-                  <Text style={styles.detailText}>AI Score: {screening.eyeImages.rightEye.aiScore}/100</Text>
-                  <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(screening.eyeImages.rightEye.risk)}20` }]}>
-                    <Text style={[styles.riskText, { color: getRiskColor(screening.eyeImages.rightEye.risk) }]}>
-                      {getRiskText(screening.eyeImages.rightEye.risk)}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.divider} />
-                <View style={styles.eyeResult}>
-                  <Text style={styles.eyeLabel}>{t.results.leftEye}</Text>
-                  <Text style={styles.detailText}>Quality: {screening.eyeImages.leftEye.quality === 'good' ? 'Good' : 'Poor'}</Text>
-                  <Text style={styles.detailText}>AI Score: {screening.eyeImages.leftEye.aiScore}/100</Text>
-                  <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(screening.eyeImages.leftEye.risk)}20` }]}>
-                    <Text style={[styles.riskText, { color: getRiskColor(screening.eyeImages.leftEye.risk) }]}>
-                      {getRiskText(screening.eyeImages.leftEye.risk)}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </View>
+          {hasPhotos && (
+            <Section icon={Camera} title={t.eyePhotoReview.title}>
+              <Card tone="info" accentBorder>
+                <Text style={styles.photosNoteText}>{t.eyePhotoReview.savedMessage}</Text>
+              </Card>
+            </Section>
           )}
 
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <FileText size={20} color={Colors.primary} />
-              <Text style={styles.sectionTitle}>Overall Assessment</Text>
-            </View>
-            <View style={styles.assessmentCard}>
+          <Section icon={FileText} title="Overall Assessment">
+            <Card style={styles.assessmentCard}>
               <View style={styles.assessmentRow}>
                 <Text style={styles.assessmentLabel}>Overall Risk:</Text>
-                <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(screening.overallRisk)}20` }]}>
-                  <Text style={[styles.riskText, { color: getRiskColor(screening.overallRisk) }]}>
-                    {getRiskText(screening.overallRisk)}
-                  </Text>
-                </View>
+                <Badge label={getRiskText(screening.overallRisk)} tone={screening.overallRisk as BadgeTone} />
               </View>
               <View style={styles.assessmentRow}>
                 <Text style={styles.assessmentLabel}>Referral:</Text>
@@ -324,8 +257,8 @@ export default function ScreeningDetailScreen() {
                   {screening.referralNeeded ? t.results.referralNeeded : 'No urgent referral needed'}
                 </Text>
               </View>
-            </View>
-          </View>
+            </Card>
+          </Section>
 
           <View style={styles.disclaimerBox}>
             <Text style={styles.disclaimerTitle}>⚠️ Important Notice</Text>
@@ -346,130 +279,64 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.primary,
-    paddingTop: 30,
-    paddingBottom: 20,
-    paddingHorizontal: 24,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   printButton: {
     width: 40,
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.surface,
-  },
-  placeholder: {
-    width: 40,
-  },
   content: {
     flex: 1,
   },
   contentContainer: {
-    padding: 24,
-    paddingBottom: 40,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  infoCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    padding: Spacing.xl,
+    paddingBottom: Spacing.xxxl,
+    gap: Spacing.xl,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   infoLabel: {
-    fontSize: 14,
+    fontSize: FontSize.sm,
     fontWeight: '600',
     color: Colors.textSecondary,
     flex: 1,
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: FontSize.sm,
     color: Colors.text,
     flex: 2,
     textAlign: 'right',
   },
-  resultsCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
   eyeResult: {
-    gap: 8,
+    gap: Spacing.sm,
   },
   eyeLabel: {
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontWeight: '700',
     color: Colors.text,
-    marginBottom: 4,
   },
   scoreText: {
-    fontSize: 15,
+    fontSize: FontSize.base,
     color: Colors.text,
     fontWeight: '600',
-  },
-  detailText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
   },
   divider: {
     height: 1,
     backgroundColor: Colors.border,
-    marginVertical: 16,
+    marginVertical: Spacing.lg,
   },
-  riskBadge: {
-    alignSelf: 'flex-start',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    marginTop: 4,
-  },
-  riskText: {
-    fontSize: 13,
-    fontWeight: '700',
+  photosNoteText: {
+    fontSize: FontSize.sm,
+    lineHeight: 19,
+    color: Colors.text,
   },
   assessmentCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 20,
-    gap: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    gap: Spacing.lg,
   },
   assessmentRow: {
     flexDirection: 'row',
@@ -477,40 +344,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   assessmentLabel: {
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontWeight: '600',
     color: Colors.text,
   },
   referralText: {
-    fontSize: 14,
+    fontSize: FontSize.sm,
     fontWeight: '700',
   },
   disclaimerBox: {
     backgroundColor: Colors.warningLight,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: Radius.md,
+    padding: Spacing.lg,
     borderLeftWidth: 4,
     borderLeftColor: Colors.warning,
-    marginTop: 8,
   },
   disclaimerTitle: {
-    fontSize: 14,
+    fontSize: FontSize.sm,
     fontWeight: '700',
     color: Colors.text,
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   disclaimerText: {
-    fontSize: 13,
+    fontSize: FontSize.xs,
     lineHeight: 20,
-    color: Colors.textSecondary,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
     color: Colors.textSecondary,
   },
 });

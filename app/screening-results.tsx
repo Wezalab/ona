@@ -7,15 +7,17 @@ import {
   SafeAreaView,
   ScrollView,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
-import { CheckCircle2, AlertTriangle, AlertCircle, Save, CloudUpload } from 'lucide-react-native';
+import { CheckCircle2, AlertTriangle, AlertCircle, Save, CloudUpload, Camera } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { useApi } from '@/contexts/ApiContext';
 import { useStarknet } from '@/hooks/useStarknet';
 import type { Sex } from '@/types/api';
-import Colors from '@/constants/colors';
-import React, { useState } from "react";
+import type { RiskLevel } from '@/constants/visualAcuity';
+import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
+import React, { useState } from 'react';
+import { Badge, Button, Card, StepProgress } from '@/components/ui';
+import type { BadgeTone } from '@/components/ui';
 
 type SubmitState = 'idle' | 'submitting' | 'done' | 'error';
 
@@ -33,7 +35,7 @@ export default function ScreeningResultsScreen() {
   const patientInfo = currentScreening.patientInfo;
   const canSubmit = isAuthenticated && !!selectedClinic;
 
-  const getRiskColor = (risk: 'low' | 'medium' | 'high') => {
+  const getRiskColor = (risk: RiskLevel) => {
     switch (risk) {
       case 'low': return Colors.success;
       case 'medium': return Colors.warning;
@@ -41,13 +43,13 @@ export default function ScreeningResultsScreen() {
     }
   };
 
-  const getRiskIcon = (risk: 'low' | 'medium' | 'high') => {
+  const getRiskIcon = (risk: RiskLevel) => {
     if (risk === 'low') return CheckCircle2;
     if (risk === 'medium') return AlertTriangle;
     return AlertCircle;
   };
 
-  const getRiskText = (risk: 'low' | 'medium' | 'high') => {
+  const getRiskText = (risk: RiskLevel) => {
     switch (risk) {
       case 'low': return t.results.riskLow;
       case 'medium': return t.results.riskMedium;
@@ -55,17 +57,12 @@ export default function ScreeningResultsScreen() {
     }
   };
 
-  const getOverallRisk = (): 'low' | 'medium' | 'high' => {
-    const risks: ('low' | 'medium' | 'high')[] = [];
-    
-    if (visualAcuity) {
-      risks.push(visualAcuity.rightEye.risk, visualAcuity.leftEye.risk);
-    }
-    
-    if (eyeImages) {
-      risks.push(eyeImages.rightEye.risk, eyeImages.leftEye.risk);
-    }
-    
+  // The real risk/referral decision comes solely from the measured Visual
+  // Acuity result — eye photos (if captured) are unscored and pending
+  // specialist review only, never a fabricated "AI" verdict.
+  const getOverallRisk = (): RiskLevel => {
+    if (!visualAcuity) return 'low';
+    const risks: RiskLevel[] = [visualAcuity.rightEye.risk, visualAcuity.leftEye.risk];
     if (risks.includes('high')) return 'high';
     if (risks.includes('medium')) return 'medium';
     return 'low';
@@ -81,18 +78,21 @@ export default function ScreeningResultsScreen() {
   };
 
   const overallRisk = getOverallRisk();
+  const capturedImageUris = [eyeImages?.rightEye?.imageUri, eyeImages?.leftEye?.imageUri].filter(
+    (uri): uri is string => !!uri,
+  );
 
   // Map the local screening into the anonymized API payload. No patient
   // identifiers are sent — only pseudonymized reference, coarse demographics
-  // and the AI risk summary.
+  // and the real VA-derived risk summary (deterministic measured test, not a
+  // probabilistic ML model — hence confidence: 1.0).
   const buildApiPayload = () => {
-    const scores = eyeImages
-      ? [eyeImages.rightEye.aiScore, eyeImages.leftEye.aiScore]
-      : [];
-    const confidence = scores.length
-      ? scores.reduce((a, b) => a + b, 0) / scores.length
-      : 0.5;
     const ageNum = patientInfo?.age ? Number(patientInfo.age) : undefined;
+    const rawScores: Record<string, number> = {};
+    if (visualAcuity) {
+      rawScores.rightEyeSnellenDenominator = visualAcuity.rightEye.denominator;
+      rawScores.leftEyeSnellenDenominator = visualAcuity.leftEye.denominator;
+    }
     return {
       patientReference: patientInfo?.patientId?.trim() || undefined,
       patientAge: Number.isFinite(ageNum) ? (ageNum as number) : undefined,
@@ -100,9 +100,11 @@ export default function ScreeningResultsScreen() {
       ai: {
         prediction: `Eye screening (${overallRisk} risk)`,
         riskLevel: overallRisk,
-        confidence,
-        modelVersion: 'mobile-sim-1',
+        confidence: 1.0,
+        modelVersion: 'va-staircase-v1',
+        rawScores,
       },
+      images: capturedImageUris.length ? capturedImageUris : undefined,
       isReferral: overallRisk !== 'low',
       device: { platform: Platform.OS, appVersion: '1.0.0' },
     };
@@ -149,8 +151,19 @@ export default function ScreeningResultsScreen() {
     router.replace('/home');
   };
 
+  const steps = [
+    t.screeningFlow.stepPatient,
+    t.screeningFlow.stepCalibration,
+    t.screeningFlow.stepVisionTest,
+    t.screeningFlow.stepPhotos,
+    t.screeningFlow.stepResults,
+  ];
+
   return (
     <SafeAreaView style={styles.safeArea}>
+      <View style={styles.stepBar}>
+        <StepProgress steps={steps} currentStepIndex={4} />
+      </View>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <View style={styles.header}>
           <View style={[styles.riskBadgeLarge, { backgroundColor: `${getRiskColor(overallRisk)}20` }]}>
@@ -160,71 +173,41 @@ export default function ScreeningResultsScreen() {
             })}
           </View>
           <Text style={styles.title}>{t.results.title}</Text>
-          <View style={[styles.overallRiskBadge, { backgroundColor: `${getRiskColor(overallRisk)}20` }]}>
-            <Text style={[styles.overallRiskText, { color: getRiskColor(overallRisk) }]}>
-              {getRiskText(overallRisk)}
-            </Text>
-          </View>
+          <Badge label={getRiskText(overallRisk)} tone={overallRisk as BadgeTone} size="md" />
         </View>
 
         <View style={styles.content}>
           {visualAcuity && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>{t.results.visualAcuityResults}</Text>
-              
-              <View style={styles.resultRow}>
-                <View style={styles.resultCard}>
-                  <Text style={styles.eyeLabel}>{t.results.rightEye}</Text>
-                  <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(visualAcuity.rightEye.risk)}20` }]}>
-                    <Text style={[styles.riskText, { color: getRiskColor(visualAcuity.rightEye.risk) }]}>
-                      {getRiskText(visualAcuity.rightEye.risk)}
-                    </Text>
-                  </View>
-                </View>
 
-                <View style={styles.resultCard}>
-                  <Text style={styles.eyeLabel}>{t.results.leftEye}</Text>
-                  <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(visualAcuity.leftEye.risk)}20` }]}>
-                    <Text style={[styles.riskText, { color: getRiskColor(visualAcuity.leftEye.risk) }]}>
-                      {getRiskText(visualAcuity.leftEye.risk)}
-                    </Text>
-                  </View>
-                </View>
+              <View style={styles.resultRow}>
+                {[
+                  { label: t.results.rightEye, result: visualAcuity.rightEye },
+                  { label: t.results.leftEye, result: visualAcuity.leftEye },
+                ].map(({ label, result }) => (
+                  <Card key={label} style={styles.resultCard}>
+                    <Text style={styles.eyeLabel}>{label}</Text>
+                    <Badge label={getRiskText(result.risk)} tone={result.risk as BadgeTone} size="sm" />
+                    <Text style={styles.scoreText}>{result.belowChart ? `< ${result.snellen}` : result.snellen}</Text>
+                  </Card>
+                ))}
               </View>
             </View>
           )}
 
-          {eyeImages && (
+          {capturedImageUris.length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t.results.eyeImageResults}</Text>
-              
-              <View style={styles.resultRow}>
-                <View style={styles.resultCard}>
-                  <Text style={styles.eyeLabel}>{t.results.rightEye}</Text>
-                  <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(eyeImages.rightEye.risk)}20` }]}>
-                    <Text style={[styles.riskText, { color: getRiskColor(eyeImages.rightEye.risk) }]}>
-                      {getRiskText(eyeImages.rightEye.risk)}
-                    </Text>
-                  </View>
-                  <Text style={styles.scoreText}>Score IA: {Math.round(eyeImages.rightEye.aiScore * 100)}%</Text>
-                </View>
-
-                <View style={styles.resultCard}>
-                  <Text style={styles.eyeLabel}>{t.results.leftEye}</Text>
-                  <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(eyeImages.leftEye.risk)}20` }]}>
-                    <Text style={[styles.riskText, { color: getRiskColor(eyeImages.leftEye.risk) }]}>
-                      {getRiskText(eyeImages.leftEye.risk)}
-                    </Text>
-                  </View>
-                  <Text style={styles.scoreText}>Score IA: {Math.round(eyeImages.leftEye.aiScore * 100)}%</Text>
-                </View>
+              <View style={styles.photosNoteRow}>
+                <Camera size={18} color={Colors.info} />
+                <Text style={styles.photosNoteText}>{t.eyePhotoReview.savedMessage}</Text>
               </View>
             </View>
           )}
 
           <View style={styles.referralSection}>
             <Text style={styles.referralTitle}>{t.results.referralAdvice}</Text>
-            <View style={[styles.referralBox, { 
+            <View style={[styles.referralBox, {
               backgroundColor: overallRisk === 'high' ? Colors.dangerLight : overallRisk === 'medium' ? Colors.warningLight : Colors.successLight,
               borderLeftColor: getRiskColor(overallRisk),
             }]}>
@@ -258,19 +241,12 @@ export default function ScreeningResultsScreen() {
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity
-            style={[styles.button, submitState === 'submitting' && styles.buttonDisabled]}
+          <Button
+            title={t.results.saveAndFinish}
             onPress={handleSaveAndFinish}
-            disabled={submitState === 'submitting'}
-            activeOpacity={0.8}
-          >
-            {submitState === 'submitting' ? (
-              <ActivityIndicator color={Colors.surface} />
-            ) : (
-              <Save size={20} color={Colors.surface} />
-            )}
-            <Text style={styles.buttonText}>{t.results.saveAndFinish}</Text>
-          </TouchableOpacity>
+            icon={Save}
+            loading={submitState === 'submitting'}
+          />
 
           {message ? <Text style={styles.submitError}>{message}</Text> : null}
         </View>
@@ -284,17 +260,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  stepBar: {
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+  },
   container: {
     flex: 1,
   },
   contentContainer: {
-    paddingBottom: 24,
+    paddingBottom: Spacing.xl,
   },
   header: {
     alignItems: 'center',
-    paddingTop: 40,
-    paddingHorizontal: 24,
-    paddingBottom: 32,
+    paddingTop: Spacing.xxl,
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.xxl,
+    gap: Spacing.md,
   },
   riskBadgeLarge: {
     width: 96,
@@ -302,82 +284,72 @@ const styles = StyleSheet.create({
     borderRadius: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.sm,
   },
   title: {
-    fontSize: 24,
+    fontSize: FontSize.xl,
     fontWeight: '700',
     color: Colors.text,
-    marginBottom: 12,
-  },
-  overallRiskBadge: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-  },
-  overallRiskText: {
-    fontSize: 16,
-    fontWeight: '700',
   },
   content: {
-    paddingHorizontal: 24,
-    gap: 24,
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.xl,
   },
   section: {
-    gap: 12,
+    gap: Spacing.md,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: Colors.text,
   },
   resultRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Spacing.md,
   },
   resultCard: {
     flex: 1,
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    gap: 8,
+    gap: Spacing.sm,
   },
   eyeLabel: {
-    fontSize: 14,
+    fontSize: FontSize.sm,
     fontWeight: '700',
     color: Colors.text,
   },
-  riskBadge: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-  },
-  riskText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
   scoreText: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: FontSize.lg,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  photosNoteRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+    backgroundColor: Colors.infoLight,
+    padding: Spacing.md,
+    borderRadius: Radius.sm,
+  },
+  photosNoteText: {
+    flex: 1,
+    fontSize: FontSize.sm,
+    lineHeight: 18,
+    color: Colors.text,
   },
   referralSection: {
-    gap: 12,
+    gap: Spacing.md,
   },
   referralTitle: {
-    fontSize: 18,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: Colors.text,
   },
   referralBox: {
-    padding: 16,
-    borderRadius: 12,
+    padding: Spacing.lg,
+    borderRadius: Radius.md,
     borderLeftWidth: 4,
   },
   referralText: {
-    fontSize: 15,
+    fontSize: FontSize.base,
     lineHeight: 22,
     color: Colors.text,
     fontWeight: '600',
@@ -385,72 +357,50 @@ const styles = StyleSheet.create({
   disclaimerBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: Spacing.md,
     backgroundColor: Colors.warningLight,
-    padding: 16,
-    borderRadius: 12,
+    padding: Spacing.lg,
+    borderRadius: Radius.md,
     borderLeftWidth: 4,
     borderLeftColor: Colors.warning,
   },
   disclaimerText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: FontSize.sm,
     lineHeight: 19,
     color: Colors.text,
   },
   footer: {
-    paddingHorizontal: 24,
-    paddingTop: 32,
-  },
-  button: {
-    flexDirection: 'row',
-    backgroundColor: Colors.primary,
-    borderRadius: 16,
-    paddingVertical: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.surface,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.xxl,
   },
   syncHint: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginBottom: 12,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   syncHintText: {
-    fontSize: 13,
+    fontSize: FontSize.sm,
     color: Colors.textSecondary,
     fontWeight: '600',
   },
   loginHint: {
     backgroundColor: Colors.infoLight,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 12,
+    borderRadius: Radius.sm,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
   },
   loginHintText: {
-    fontSize: 13,
+    fontSize: FontSize.sm,
     color: Colors.text,
     textAlign: 'center',
   },
   submitError: {
-    fontSize: 13,
+    fontSize: FontSize.sm,
     color: Colors.danger,
     textAlign: 'center',
-    marginTop: 12,
+    marginTop: Spacing.md,
   },
 });

@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Image } from 'react-native';
 import { Plus, History, Settings, Info, Server, ShieldCheck } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors from '@/constants/colors';
+import Colors, { Spacing } from '@/constants/colors';
+import { IconTile } from '@/components/ui';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -67,20 +68,14 @@ export default function HomeScreen() {
 
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
           {menuItems.map((item, index) => (
-            <TouchableOpacity
+            <IconTile
               key={index}
-              style={styles.menuItem}
+              icon={item.icon}
+              title={item.title}
+              description={item.description}
+              color={item.color}
               onPress={item.onPress}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.iconContainer, { backgroundColor: `${item.color}15` }]}>
-                <item.icon size={32} color={item.color} />
-              </View>
-              <View style={styles.menuContent}>
-                <Text style={styles.menuTitle}>{item.title}</Text>
-                <Text style={styles.menuDescription}>{item.description}</Text>
-              </View>
-            </TouchableOpacity>
+            />
           ))}
         </ScrollView>
 
@@ -105,9 +100,9 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: Colors.primary,
-    paddingTop: 60,
-    paddingBottom: 32,
-    paddingHorizontal: 24,
+    paddingTop: 56,
+    paddingBottom: Spacing.xxl,
+    paddingHorizontal: Spacing.xl,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
     alignItems: 'center',
@@ -115,7 +110,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 200,
     height: 80,
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
   subtitle: {
     fontSize: 16,
@@ -125,49 +120,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    padding: 24,
-    gap: 16,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 20,
-    gap: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  menuContent: {
-    flex: 1,
-  },
-  menuTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  menuDescription: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    lineHeight: 20,
+    padding: Spacing.xl,
+    gap: Spacing.lg,
   },
   disclaimer: {
     backgroundColor: Colors.warningLight,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xl,
   },
   disclaimerText: {
     fontSize: 12,

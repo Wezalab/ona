@@ -1,9 +1,12 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { useEffect } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
 import { CheckCircle2, AlertCircle, Eye, ArrowRight } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors from '@/constants/colors';
-import React, { useEffect } from "react";
+import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
+import type { RiskLevel } from '@/constants/visualAcuity';
+import { Badge, Button, Card, ScreenHeader, StepProgress } from '@/components/ui';
+import type { BadgeTone } from '@/components/ui';
 
 export default function VAResultScreen() {
   const router = useRouter();
@@ -21,19 +24,16 @@ export default function VAResultScreen() {
     return null;
   }
 
-  const getRiskColor = (risk: 'low' | 'medium' | 'high') => {
+  const getRiskIcon = (risk: RiskLevel) => (risk === 'low' ? CheckCircle2 : AlertCircle);
+  const getRiskColor = (risk: RiskLevel): string => {
     switch (risk) {
       case 'low': return Colors.success;
       case 'medium': return Colors.warning;
       case 'high': return Colors.danger;
     }
   };
-
-  const getRiskIcon = (risk: 'low' | 'medium' | 'high') => {
-    return risk === 'low' ? CheckCircle2 : AlertCircle;
-  };
-
-  const getRiskText = (risk: 'low' | 'medium' | 'high') => {
+  const getRiskTone = (risk: RiskLevel): BadgeTone => risk;
+  const getRiskText = (risk: RiskLevel) => {
     switch (risk) {
       case 'low': return t.results.riskLow;
       case 'medium': return t.results.riskMedium;
@@ -41,51 +41,62 @@ export default function VAResultScreen() {
     }
   };
 
+  const steps = [
+    t.screeningFlow.stepPatient,
+    t.screeningFlow.stepCalibration,
+    t.screeningFlow.stepVisionTest,
+    t.screeningFlow.stepPhotos,
+    t.screeningFlow.stepResults,
+  ];
+
   const handleContinue = () => {
     router.push('/eye-capture');
   };
 
+  const eyes = [
+    { label: t.results.rightEye, result: visualAcuity.rightEye },
+    { label: t.results.leftEye, result: visualAcuity.leftEye },
+  ];
+
   return (
     <SafeAreaView style={styles.safeArea}>
+      <View style={styles.stepBar}>
+        <StepProgress steps={steps} currentStepIndex={2} />
+      </View>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <View style={styles.header}>
-          <Eye size={48} color={Colors.primary} />
-          <Text style={styles.title}>{t.results.visualAcuityResults}</Text>
-          <Text style={styles.subtitle}>Test terminé</Text>
-        </View>
+        <ScreenHeader
+          icon={Eye}
+          title={t.results.visualAcuityResults}
+          subtitle={`${t.visualAcuity.complete} · ${visualAcuity.distanceMeters}m`}
+          compact
+        />
 
         <View style={styles.content}>
-          <View style={styles.resultCard}>
-            <View style={styles.resultHeader}>
-              <Text style={styles.eyeLabel}>{t.results.rightEye}</Text>
-              {React.createElement(getRiskIcon(visualAcuity.rightEye.risk), {
-                size: 24,
-                color: getRiskColor(visualAcuity.rightEye.risk),
-              })}
-            </View>
-            <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(visualAcuity.rightEye.risk)}20` }]}>
-              <Text style={[styles.riskText, { color: getRiskColor(visualAcuity.rightEye.risk) }]}>
-                {getRiskText(visualAcuity.rightEye.risk)}
-              </Text>
-            </View>
-            <Text style={styles.scoreText}>Score: {visualAcuity.rightEye.score}/6</Text>
-          </View>
-
-          <View style={styles.resultCard}>
-            <View style={styles.resultHeader}>
-              <Text style={styles.eyeLabel}>{t.results.leftEye}</Text>
-              {React.createElement(getRiskIcon(visualAcuity.leftEye.risk), {
-                size: 24,
-                color: getRiskColor(visualAcuity.leftEye.risk),
-              })}
-            </View>
-            <View style={[styles.riskBadge, { backgroundColor: `${getRiskColor(visualAcuity.leftEye.risk)}20` }]}>
-              <Text style={[styles.riskText, { color: getRiskColor(visualAcuity.leftEye.risk) }]}>
-                {getRiskText(visualAcuity.leftEye.risk)}
-              </Text>
-            </View>
-            <Text style={styles.scoreText}>Score: {visualAcuity.leftEye.score}/6</Text>
-          </View>
+          {eyes.map(({ label, result }) => {
+            const RiskIcon = getRiskIcon(result.risk);
+            return (
+              <Card key={label} elevated>
+                <View style={styles.resultHeader}>
+                  <Text style={styles.eyeLabel}>{label}</Text>
+                  <RiskIcon size={22} color={getRiskColor(result.risk)} />
+                </View>
+                <Badge label={getRiskText(result.risk)} tone={getRiskTone(result.risk)} />
+                <View style={styles.notationRow}>
+                  <View style={styles.notationItem}>
+                    <Text style={styles.notationLabel}>{t.visualAcuity.snellenNotation}</Text>
+                    <Text style={styles.notationValue}>{result.belowChart ? `< ${result.snellen}` : result.snellen}</Text>
+                  </View>
+                  <View style={styles.notationItem}>
+                    <Text style={styles.notationLabel}>{t.visualAcuity.decimalNotation}</Text>
+                    <Text style={styles.notationValue}>{result.belowChart ? `< ${result.decimal}` : result.decimal}</Text>
+                  </View>
+                </View>
+                {result.belowChart && (
+                  <Text style={styles.belowChartWarning}>{t.visualAcuity.belowChartWarning}</Text>
+                )}
+              </Card>
+            );
+          })}
 
           <View style={styles.infoBox}>
             <Text style={styles.infoText}>
@@ -95,15 +106,8 @@ export default function VAResultScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.nextStep}>Étape suivante: Capture d&apos;image de l&apos;œil</Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleContinue}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.buttonText}>{t.continue}</Text>
-            <ArrowRight size={20} color={Colors.surface} />
-          </TouchableOpacity>
+          <Text style={styles.nextStep}>{t.eyeImage.nextStepHint}</Text>
+          <Button title={t.continue} onPress={handleContinue} icon={ArrowRight} iconPosition="right" />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -115,106 +119,79 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  stepBar: {
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+  },
   container: {
     flex: 1,
   },
   contentContainer: {
-    paddingBottom: 24,
-  },
-  header: {
-    alignItems: 'center',
-    paddingTop: 40,
-    paddingHorizontal: 24,
-    paddingBottom: 32,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.text,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    paddingBottom: Spacing.xl,
   },
   content: {
-    paddingHorizontal: 24,
-    gap: 16,
-  },
-  resultCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    gap: 12,
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.lg,
   },
   resultHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: Spacing.sm,
   },
   eyeLabel: {
-    fontSize: 18,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: Colors.text,
   },
-  riskBadge: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
+  notationRow: {
+    flexDirection: 'row',
+    gap: Spacing.xl,
+    marginTop: Spacing.md,
   },
-  riskText: {
-    fontSize: 14,
+  notationItem: {
+    gap: 2,
+  },
+  notationLabel: {
+    fontSize: FontSize.xs,
+    color: Colors.textLight,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  notationValue: {
+    fontSize: FontSize.xl,
     fontWeight: '700',
+    color: Colors.text,
   },
-  scoreText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+  belowChartWarning: {
+    marginTop: Spacing.md,
+    fontSize: FontSize.sm,
+    color: Colors.danger,
+    fontStyle: 'italic',
   },
   infoBox: {
     backgroundColor: Colors.infoLight,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: Radius.md,
+    padding: Spacing.lg,
     borderLeftWidth: 4,
     borderLeftColor: Colors.info,
-    marginTop: 8,
+    marginTop: Spacing.sm,
   },
   infoText: {
-    fontSize: 14,
+    fontSize: FontSize.base,
     lineHeight: 20,
     color: Colors.text,
   },
   footer: {
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    gap: 12,
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.xxl,
+    gap: Spacing.md,
   },
   nextStep: {
-    fontSize: 14,
+    fontSize: FontSize.base,
     fontWeight: '600',
     color: Colors.textSecondary,
     textAlign: 'center',
-  },
-  button: {
-    flexDirection: 'row',
-    backgroundColor: Colors.primary,
-    borderRadius: 16,
-    paddingVertical: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.surface,
   },
 });
