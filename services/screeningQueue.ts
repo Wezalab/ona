@@ -24,6 +24,7 @@ export type QueuedScreening = {
   clinicId: string;
   clinicCode: number;
   ai: AiResultInput;
+  images?: string[];
   isReferral: boolean;
   device?: CreateScreeningInput['device'];
   // Mutable sync state
@@ -58,6 +59,7 @@ export type EnqueueInput = {
   clinicId: string;
   clinicCode: number;
   ai: AiResultInput;
+  images?: string[];
   isReferral: boolean;
   device?: CreateScreeningInput['device'];
 };
@@ -75,6 +77,7 @@ export async function enqueueScreening(input: EnqueueInput): Promise<QueuedScree
     clinicId: input.clinicId,
     clinicCode: input.clinicCode,
     ai: input.ai,
+    images: input.images,
     isReferral: input.isReferral,
     device: input.device,
     attempts: 0,
@@ -169,6 +172,7 @@ async function syncOne(item: QueuedScreening): Promise<void> {
     patient: item.patientId,
     clinic: item.clinicId,
     ai: item.ai,
+    images: item.images,
     isReferral: item.isReferral,
     device: item.device,
     sync: {
