@@ -70,14 +70,30 @@ export interface Translations {
     notesPlaceholder: string;
     startScreening: string;
   };
+
+  screeningFlow: {
+    stepPatient: string;
+    stepCalibration: string;
+    stepVisionTest: string;
+    stepPhotos: string;
+    stepResults: string;
+  };
   
   visualAcuity: {
     calibrationTitle: string;
     calibrationInstructions: string;
     placeCardInstruction: string;
+    adjustCardInstruction: string;
     cardPlaced: string;
+    distanceTitle: string;
+    distanceInstructions: string;
+    distanceHelp: string;
+    distance3m: string;
+    distance6m: string;
     testTitle: string;
     testInstructions: string;
+    lineLabel: string;
+    trialProgress: string;
     coverEye: string;
     whichWayPoints: string;
     up: string;
@@ -87,6 +103,9 @@ export interface Translations {
     cantSee: string;
     nextEye: string;
     complete: string;
+    snellenNotation: string;
+    decimalNotation: string;
+    belowChartWarning: string;
   };
   
   eyeImage: {
@@ -102,12 +121,20 @@ export interface Translations {
     qualityGood: string;
     qualityPoor: string;
     qualityPoorReason: string;
+    optionalNote: string;
+    skipEye: string;
+    skipAllPhotos: string;
+    photoSaved: string;
+    nextStepHint: string;
   };
   
-  aiProcessing: {
+  eyePhotoReview: {
     title: string;
-    analyzing: string;
     subtitle: string;
+    savedMessage: string;
+    pendingBadge: string;
+    noPhotosMessage: string;
+    continueButton: string;
   };
   
   results: {
@@ -279,14 +306,30 @@ export const translations: Record<Language, Translations> = {
       notesPlaceholder: 'Observations or notes',
       startScreening: 'Start Screening',
     },
+
+    screeningFlow: {
+      stepPatient: 'Patient',
+      stepCalibration: 'Calibration',
+      stepVisionTest: 'Vision test',
+      stepPhotos: 'Photos',
+      stepResults: 'Results',
+    },
     
     visualAcuity: {
       calibrationTitle: 'Calibration',
-      calibrationInstructions: 'Use a standard bank card to calibrate the display size',
-      placeCardInstruction: 'Place a bank card on the rectangle below',
-      cardPlaced: 'Card Placed',
+      calibrationInstructions: 'Resize the outline to match a standard bank card so letter sizes are physically accurate',
+      placeCardInstruction: 'Hold a bank card against the screen and adjust the outline to match it exactly',
+      adjustCardInstruction: 'Use +/- to resize the outline until it exactly matches the card',
+      cardPlaced: 'Card Matches',
+      distanceTitle: 'Test Distance',
+      distanceInstructions: 'How far will the patient stand from the phone?',
+      distanceHelp: 'Choose based on available space. Letter sizes are calculated automatically for the selected distance.',
+      distance3m: '3 meters',
+      distance6m: '6 meters',
       testTitle: 'Visual Acuity Test',
-      testInstructions: 'Hold the phone at 40 cm. Patient must cover one eye.',
+      testInstructions: 'Patient must cover one eye and stand at the selected test distance.',
+      lineLabel: 'Line',
+      trialProgress: 'Trial',
       coverEye: 'Cover Eye',
       whichWayPoints: 'Which way does the E point?',
       up: 'Up',
@@ -296,10 +339,13 @@ export const translations: Record<Language, Translations> = {
       cantSee: 'Cannot See',
       nextEye: 'Next Eye',
       complete: 'Test Complete',
+      snellenNotation: 'Snellen',
+      decimalNotation: 'Decimal',
+      belowChartWarning: 'Could not read even the largest optotype',
     },
     
     eyeImage: {
-      captureTitle: 'Eye Image Capture',
+      captureTitle: 'Eye Photo (Optional)',
       captureInstructions: 'Take a clear photo of the patient\'s eye',
       goodLighting: 'Good lighting',
       holdSteady: 'Hold steady',
@@ -307,16 +353,24 @@ export const translations: Record<Language, Translations> = {
       capturePhoto: 'Capture Photo',
       retake: 'Retake',
       usePhoto: 'Use Photo',
-      qualityCheck: 'Quality Check',
-      qualityGood: 'Quality good',
-      qualityPoor: 'Quality insufficient',
-      qualityPoorReason: 'Image blurry or poorly lit. Please retake.',
+      qualityCheck: 'Photo Preview',
+      qualityGood: 'Photo captured',
+      qualityPoor: 'Photo captured',
+      qualityPoorReason: 'Saved as-is for specialist review — no automatic quality check is performed.',
+      optionalNote: 'Eye photos are optional. They are saved for later specialist review and do not affect the screening risk score.',
+      skipEye: 'Skip this eye',
+      skipAllPhotos: 'Skip photos entirely',
+      photoSaved: 'Photo saved',
+      nextStepHint: 'Next step: Eye photo (optional)',
     },
     
-    aiProcessing: {
-      title: 'Analyzing',
-      analyzing: 'Analyzing image...',
-      subtitle: 'On-device processing (offline)',
+    eyePhotoReview: {
+      title: 'Eye Photos',
+      subtitle: 'Pending specialist review',
+      savedMessage: 'Photos saved for specialist review. They do not affect the screening risk score, which is based on the Visual Acuity result.',
+      pendingBadge: 'Pending review',
+      noPhotosMessage: 'No eye photos were captured.',
+      continueButton: 'Continue',
     },
     
     results: {
@@ -486,14 +540,30 @@ export const translations: Record<Language, Translations> = {
       notesPlaceholder: 'Observations ou notes',
       startScreening: 'Commencer le Dépistage',
     },
+
+    screeningFlow: {
+      stepPatient: 'Patient',
+      stepCalibration: 'Calibration',
+      stepVisionTest: 'Test de vue',
+      stepPhotos: 'Photos',
+      stepResults: 'Résultats',
+    },
     
     visualAcuity: {
       calibrationTitle: 'Calibration',
-      calibrationInstructions: 'Utilisez une carte bancaire standard pour calibrer la taille d\'affichage',
-      placeCardInstruction: 'Placez une carte bancaire sur le rectangle ci-dessous',
-      cardPlaced: 'Carte Placée',
+      calibrationInstructions: 'Ajustez le contour pour qu\'il corresponde à une carte bancaire standard afin que la taille des lettres soit physiquement exacte',
+      placeCardInstruction: 'Tenez une carte bancaire contre l\'écran et ajustez le contour pour qu\'il correspondre exactement',
+      adjustCardInstruction: 'Utilisez +/- pour ajuster le contour jusqu\'à ce qu\'il corresponde exactement à la carte',
+      cardPlaced: 'Carte Correspondante',
+      distanceTitle: 'Distance du Test',
+      distanceInstructions: 'À quelle distance du téléphone le patient se tiendra-t-il?',
+      distanceHelp: 'Choisissez selon l\'espace disponible. La taille des lettres est calculée automatiquement pour la distance choisie.',
+      distance3m: '3 mètres',
+      distance6m: '6 mètres',
       testTitle: 'Test d\'Acuité Visuelle',
-      testInstructions: 'Tenez le téléphone à 40 cm. Le patient doit couvrir un œil.',
+      testInstructions: 'Le patient doit couvrir un œil et se tenir à la distance de test sélectionnée.',
+      lineLabel: 'Ligne',
+      trialProgress: 'Essai',
       coverEye: 'Couvrir l\'œil',
       whichWayPoints: 'Dans quelle direction pointe le E?',
       up: 'Haut',
@@ -503,10 +573,13 @@ export const translations: Record<Language, Translations> = {
       cantSee: 'Ne Voit Pas',
       nextEye: 'Œil Suivant',
       complete: 'Test Terminé',
+      snellenNotation: 'Snellen',
+      decimalNotation: 'Décimal',
+      belowChartWarning: 'N\'a pas pu lire même le plus grand optotype',
     },
     
     eyeImage: {
-      captureTitle: 'Capture d\'Image de l\'Œil',
+      captureTitle: 'Photo de l\'Œil (Optionnel)',
       captureInstructions: 'Prenez une photo claire de l\'œil du patient',
       goodLighting: 'Bon éclairage',
       holdSteady: 'Tenir stable',
@@ -514,16 +587,24 @@ export const translations: Record<Language, Translations> = {
       capturePhoto: 'Prendre Photo',
       retake: 'Reprendre',
       usePhoto: 'Utiliser',
-      qualityCheck: 'Vérification de qualité',
-      qualityGood: 'Qualité bonne',
-      qualityPoor: 'Qualité insuffisante',
-      qualityPoorReason: 'Image floue ou mal éclairée. Veuillez reprendre.',
+      qualityCheck: 'Aperçu de la photo',
+      qualityGood: 'Photo capturée',
+      qualityPoor: 'Photo capturée',
+      qualityPoorReason: 'Enregistrée telle quelle pour examen par un spécialiste — aucune vérification automatique de qualité n\'est effectuée.',
+      optionalNote: 'Les photos de l\'œil sont optionnelles. Elles sont enregistrées pour examen ultérieur par un spécialiste et n\'affectent pas le score de risque du dépistage.',
+      skipEye: 'Passer cet œil',
+      skipAllPhotos: 'Passer toutes les photos',
+      photoSaved: 'Photo enregistrée',
+      nextStepHint: 'Étape suivante : Photo de l\'œil (optionnel)',
     },
     
-    aiProcessing: {
-      title: 'Analyse en cours',
-      analyzing: 'Analyse de l\'image...',
-      subtitle: 'Traitement sur l\'appareil (hors ligne)',
+    eyePhotoReview: {
+      title: 'Photos de l\'Œil',
+      subtitle: 'En attente d\'examen par un spécialiste',
+      savedMessage: 'Photos enregistrées pour examen par un spécialiste. Elles n\'affectent pas le score de risque du dépistage, qui est basé sur le résultat de l\'Acuité Visuelle.',
+      pendingBadge: 'En attente',
+      noPhotosMessage: 'Aucune photo de l\'œil n\'a été prise.',
+      continueButton: 'Continuer',
     },
     
     results: {
@@ -694,14 +775,30 @@ export const translations: Record<Language, Translations> = {
       notesPlaceholder: 'Uchunguzi au maelezo',
       startScreening: 'Anza Uchunguzi',
     },
+
+    screeningFlow: {
+      stepPatient: 'Mgonjwa',
+      stepCalibration: 'Usawazishaji',
+      stepVisionTest: 'Jaribio la kuona',
+      stepPhotos: 'Picha',
+      stepResults: 'Matokeo',
+    },
     
     visualAcuity: {
       calibrationTitle: 'Usawazishaji',
-      calibrationInstructions: 'Tumia kadi ya benki ya kawaida kusawazisha ukubwa wa onyesho',
-      placeCardInstruction: 'Weka kadi ya benki kwenye mstatili hapa chini',
-      cardPlaced: 'Kadi Imewekwa',
+      calibrationInstructions: 'Badilisha ukubwa wa mstatili ili ufanane na kadi ya benki ya kawaida ili ukubwa wa herufi uwe sahihi',
+      placeCardInstruction: 'Shikilia kadi ya benki kwenye skrini na urekebishe mstatili ili ufanane nayo kikamilifu',
+      adjustCardInstruction: 'Tumia +/- kurekebisha mstatili hadi ufanane kikamilifu na kadi',
+      cardPlaced: 'Kadi Inafanana',
+      distanceTitle: 'Umbali wa Jaribio',
+      distanceInstructions: 'Mgonjwa atasimama umbali gani kutoka kwa simu?',
+      distanceHelp: 'Chagua kulingana na nafasi iliyopo. Ukubwa wa herufi unahesabiwa kiotomatiki kwa umbali uliochaguliwa.',
+      distance3m: 'Mita 3',
+      distance6m: 'Mita 6',
       testTitle: 'Jaribio la Uangavu wa Kuona',
-      testInstructions: 'Shikilia simu umbali wa sm 40. Mgonjwa lazima afunike jicho moja.',
+      testInstructions: 'Mgonjwa lazima afunike jicho moja na asimame umbali wa jaribio uliochaguliwa.',
+      lineLabel: 'Mstari',
+      trialProgress: 'Jaribu',
       coverEye: 'Funika Jicho',
       whichWayPoints: 'E inaelekea upande gani?',
       up: 'Juu',
@@ -711,10 +808,13 @@ export const translations: Record<Language, Translations> = {
       cantSee: 'Haoni',
       nextEye: 'Jicho Lifuatalo',
       complete: 'Jaribio Limemalizika',
+      snellenNotation: 'Snellen',
+      decimalNotation: 'Desimali',
+      belowChartWarning: 'Hakuweza kusoma hata optotype kubwa zaidi',
     },
     
     eyeImage: {
-      captureTitle: 'Piga Picha ya Jicho',
+      captureTitle: 'Picha ya Jicho (Si Lazima)',
       captureInstructions: 'Piga picha wazi ya jicho la mgonjwa',
       goodLighting: 'Mwanga mzuri',
       holdSteady: 'Shikilia imara',
@@ -722,16 +822,24 @@ export const translations: Record<Language, Translations> = {
       capturePhoto: 'Piga Picha',
       retake: 'Rudia',
       usePhoto: 'Tumia',
-      qualityCheck: 'Ukaguzi wa Ubora',
-      qualityGood: 'Ubora mzuri',
-      qualityPoor: 'Ubora si wa kutosha',
-      qualityPoorReason: 'Picha si wazi au mwanga si mzuri. Tafadhali rudia.',
+      qualityCheck: 'Muonekano wa Picha',
+      qualityGood: 'Picha imepigwa',
+      qualityPoor: 'Picha imepigwa',
+      qualityPoorReason: 'Imehifadhiwa kama ilivyo kwa ukaguzi wa mtaalamu — hakuna ukaguzi wa ubora wa kiotomatiki unaofanywa.',
+      optionalNote: 'Picha za jicho si lazima. Zinahifadhiwa kwa ukaguzi wa mtaalamu baadaye na hazibadilishi alama ya hatari ya uchunguzi.',
+      skipEye: 'Ruka jicho hili',
+      skipAllPhotos: 'Ruka picha zote',
+      photoSaved: 'Picha imehifadhiwa',
+      nextStepHint: 'Hatua inayofuata: Picha ya jicho (si lazima)',
     },
     
-    aiProcessing: {
-      title: 'Inachambua',
-      analyzing: 'Inachambua picha...',
-      subtitle: 'Usindikaji kwenye kifaa (bila mtandao)',
+    eyePhotoReview: {
+      title: 'Picha za Jicho',
+      subtitle: 'Inasubiri ukaguzi wa mtaalamu',
+      savedMessage: 'Picha zimehifadhiwa kwa ukaguzi wa mtaalamu. Hazibadilishi alama ya hatari ya uchunguzi, ambayo inategemea matokeo ya Uangavu wa Kuona.',
+      pendingBadge: 'Inasubiri ukaguzi',
+      noPhotosMessage: 'Hakuna picha za jicho zilizopigwa.',
+      continueButton: 'Endelea',
     },
     
     results: {
@@ -902,14 +1010,30 @@ export const translations: Record<Language, Translations> = {
       notesPlaceholder: 'Botalisi to maloba',
       startScreening: 'Kobanda Botalisi',
     },
+
+    screeningFlow: {
+      stepPatient: 'Mobeli',
+      stepCalibration: 'Kobongisa',
+      stepVisionTest: 'Komeka komona',
+      stepPhotos: 'Bafoto',
+      stepResults: 'Mbano',
+    },
     
     visualAcuity: {
       calibrationTitle: 'Kobongisa',
-      calibrationInstructions: 'Salelá carte ya banque ya normal pona kobongisa bonene ya moniseli',
-      placeCardInstruction: 'Tyá carte ya banque likolo ya rectangle oyo ezali na nse',
-      cardPlaced: 'Carte Etyami',
+      calibrationInstructions: 'Bongisa bonene ya rectangle pona ekokana na carte ya banque ya normal, pona bonene ya minoko ezala ya solo',
+      placeCardInstruction: 'Simba carte ya banque na moniseli mpe bongisa rectangle pona ekokana na yango malamu',
+      adjustCardInstruction: 'Salelá +/- pona kobongisa rectangle tii ekokana malamu na carte',
+      cardPlaced: 'Carte Ekokani',
+      distanceTitle: 'Molayi ya Komeka',
+      distanceInstructions: 'Mobeli akotelema molayi boni na telefone?',
+      distanceHelp: 'Pona kolanda esika ezali. Bonene ya minoko ekokanisama automatique pona molayi oponami.',
+      distance3m: 'Métre 3',
+      distance6m: 'Métre 6',
       testTitle: 'Komeka Komona Malamu',
-      testInstructions: 'Simba telefone na cm 40. Mobeli asengeli kofunda liso moko.',
+      testInstructions: 'Mobeli asengeli kofunda liso moko mpe kotelema na molayi ya komeka oponami.',
+      lineLabel: 'Molongo',
+      trialProgress: 'Komeka',
       coverEye: 'Kofunda Liso',
       whichWayPoints: 'E ezali kotatola epai nini?',
       up: 'Likolo',
@@ -919,10 +1043,13 @@ export const translations: Record<Language, Translations> = {
       cantSee: 'Amonaka Te',
       nextEye: 'Liso Elandaki',
       complete: 'Komeka Esilaki',
+      snellenNotation: 'Snellen',
+      decimalNotation: 'Décimal',
+      belowChartWarning: 'Amonaki te ata optotype ya monene mingi',
     },
     
     eyeImage: {
-      captureTitle: 'Kokanga Elilingi ya Liso',
+      captureTitle: 'Elilingi ya Liso (Esengeli Te)',
       captureInstructions: 'Kanga elilingi ya polele ya liso ya mobeli',
       goodLighting: 'Pole malamu',
       holdSteady: 'Simba makasi',
@@ -930,16 +1057,24 @@ export const translations: Record<Language, Translations> = {
       capturePhoto: 'Kanga Elilingi',
       retake: 'Zongela',
       usePhoto: 'Salelá',
-      qualityCheck: 'Botalisi ya Bolamu',
-      qualityGood: 'Bolamu malamu',
-      qualityPoor: 'Bolamu ekoki te',
-      qualityPoorReason: 'Elilingi ezali polele te to pole ezali malamu te. Zongela.',
+      qualityCheck: 'Kotala Elilingi',
+      qualityGood: 'Elilingi ekangami',
+      qualityPoor: 'Elilingi ekangami',
+      qualityPoorReason: 'Ebombami ndenge ezali pona botalisi ya monganga — botalisi ya bolamu ya automatique esalemi te.',
+      optionalNote: 'Bafoto ya liso esengeli te. Ebombami pona botalisi ya monganga na sima mpe ebongolaka te motuya ya likama ya botalisi.',
+      skipEye: 'Leka liso oyo',
+      skipAllPhotos: 'Leka bafoto nionso',
+      photoSaved: 'Elilingi ebombami',
+      nextStepHint: 'Etape elandi: Elilingi ya liso (esengeli te)',
     },
     
-    aiProcessing: {
-      title: 'Botalisi ekomi',
-      analyzing: 'Botalisi ya elilingi...',
-      subtitle: 'Mosala na aparey (na internet te)',
+    eyePhotoReview: {
+      title: 'Bafoto ya Liso',
+      subtitle: 'Ezali kozela botalisi ya monganga',
+      savedMessage: 'Bafoto ebombami pona botalisi ya monganga. Ebongolaka te motuya ya likama ya botalisi, oyo ezali kotelema na mbano ya Komona Malamu.',
+      pendingBadge: 'Ezali kozela',
+      noPhotosMessage: 'Foto moko te ya liso ekangami.',
+      continueButton: 'Kokoba',
     },
     
     results: {
