@@ -23,7 +23,7 @@ function RootLayoutNav() {
       <Stack.Screen name="va-test" />
       <Stack.Screen name="va-result" />
       <Stack.Screen name="eye-capture" />
-      <Stack.Screen name="ai-processing" />
+      <Stack.Screen name="eye-photo-review" />
       <Stack.Screen name="screening-results" />
       <Stack.Screen name="history" />
       <Stack.Screen name="screening-detail" />
