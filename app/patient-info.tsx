@@ -1,20 +1,32 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { User, ArrowRight } from 'lucide-react-native';
-import { useApp } from '@/contexts/AppContext';
-import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
-import type { PatientInfo } from '@/contexts/AppContext';
-import { Button, ScreenHeader, StepProgress, TextField } from '@/components/ui';
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { User, ArrowRight } from "lucide-react-native";
+import { useApp } from "@/contexts/AppContext";
+import Colors, { FontSize, Radius, Spacing } from "@/constants/colors";
+import type { PatientInfo } from "@/contexts/AppContext";
+import { Button, ScreenHeader, StepProgress, TextField } from "@/components/ui";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function PatientInfoScreen() {
   const router = useRouter();
   const { t, startNewScreening, updatePatientInfo } = useApp();
 
-  const [patientId, setPatientId] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState<'male' | 'female' | 'other' | undefined>(undefined);
-  const [notes, setNotes] = useState('');
+  const [patientId, setPatientId] = useState("");
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState<"male" | "female" | "other" | undefined>(
+    undefined,
+  );
+  const [notes, setNotes] = useState("");
 
   const steps = [
     t.screeningFlow.stepPatient,
@@ -25,8 +37,17 @@ export default function PatientInfoScreen() {
   ];
 
   const handleStartScreening = () => {
-    if (age && (isNaN(parseInt(age, 10)) || parseInt(age, 10) < 0 || parseInt(age, 10) > 120)) {
-      Alert.alert(t.error, 'Âge invalide. Veuillez entrer un âge entre 0 et 120.', [{ text: 'OK' }]);
+    if (
+      age &&
+      (isNaN(parseInt(age, 10)) ||
+        parseInt(age, 10) < 0 ||
+        parseInt(age, 10) > 120)
+    ) {
+      Alert.alert(
+        t.error,
+        "Âge invalide. Veuillez entrer un âge entre 0 et 120.",
+        [{ text: "OK" }],
+      );
       return;
     }
 
@@ -40,92 +61,128 @@ export default function PatientInfoScreen() {
     };
 
     updatePatientInfo(info);
-    router.push('/va-calibration');
+    router.push("/va-calibration");
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.stepBar}>
-        <StepProgress steps={steps} currentStepIndex={0} />
-      </View>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          style={styles.container}
-          contentContainerStyle={styles.contentContainer}
-          keyboardShouldPersistTaps="handled"
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.stepBar}>
+          <StepProgress steps={steps} currentStepIndex={0} />
+        </View>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardView}
         >
-          <ScreenHeader icon={User} title={t.patientInfo.title} subtitle={t.patientInfo.subtitle} compact />
-
-          <View style={styles.form}>
-            <TextField
-              label={t.patientInfo.patientId}
-              value={patientId}
-              onChangeText={setPatientId}
-              placeholder={t.patientInfo.patientIdPlaceholder}
+          <ScrollView
+            style={styles.container}
+            contentContainerStyle={styles.contentContainer}
+            keyboardShouldPersistTaps="handled"
+          >
+            <ScreenHeader
+              icon={User}
+              title={t.patientInfo.title}
+              subtitle={t.patientInfo.subtitle}
+              compact
             />
 
-            <TextField
-              label={t.patientInfo.age}
-              value={age}
-              onChangeText={setAge}
-              placeholder={t.patientInfo.agePlaceholder}
-              keyboardType="number-pad"
-            />
+            <View style={styles.form}>
+              <TextField
+                label={t.patientInfo.patientId}
+                value={patientId}
+                onChangeText={setPatientId}
+                placeholder={t.patientInfo.patientIdPlaceholder}
+              />
 
-            <View style={styles.field}>
-              <Text style={styles.label}>{t.patientInfo.gender}</Text>
-              <View style={styles.genderContainer}>
-                <TouchableOpacity
-                  style={[styles.genderButton, gender === 'male' && styles.genderButtonSelected]}
-                  onPress={() => setGender('male')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.genderText, gender === 'male' && styles.genderTextSelected]}>
-                    {t.patientInfo.male}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.genderButton, gender === 'female' && styles.genderButtonSelected]}
-                  onPress={() => setGender('female')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.genderText, gender === 'female' && styles.genderTextSelected]}>
-                    {t.patientInfo.female}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.genderButton, gender === 'other' && styles.genderButtonSelected]}
-                  onPress={() => setGender('other')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.genderText, gender === 'other' && styles.genderTextSelected]}>
-                    {t.patientInfo.other}
-                  </Text>
-                </TouchableOpacity>
+              <TextField
+                label={t.patientInfo.age}
+                value={age}
+                onChangeText={setAge}
+                placeholder={t.patientInfo.agePlaceholder}
+                keyboardType="number-pad"
+              />
+
+              <View style={styles.field}>
+                <Text style={styles.label}>{t.patientInfo.gender}</Text>
+                <View style={styles.genderContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.genderButton,
+                      gender === "male" && styles.genderButtonSelected,
+                    ]}
+                    onPress={() => setGender("male")}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.genderText,
+                        gender === "male" && styles.genderTextSelected,
+                      ]}
+                    >
+                      {t.patientInfo.male}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.genderButton,
+                      gender === "female" && styles.genderButtonSelected,
+                    ]}
+                    onPress={() => setGender("female")}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.genderText,
+                        gender === "female" && styles.genderTextSelected,
+                      ]}
+                    >
+                      {t.patientInfo.female}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.genderButton,
+                      gender === "other" && styles.genderButtonSelected,
+                    ]}
+                    onPress={() => setGender("other")}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.genderText,
+                        gender === "other" && styles.genderTextSelected,
+                      ]}
+                    >
+                      {t.patientInfo.other}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
+
+              <TextField
+                label={t.patientInfo.notes}
+                value={notes}
+                onChangeText={setNotes}
+                placeholder={t.patientInfo.notesPlaceholder}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+                style={styles.textArea}
+              />
             </View>
 
-            <TextField
-              label={t.patientInfo.notes}
-              value={notes}
-              onChangeText={setNotes}
-              placeholder={t.patientInfo.notesPlaceholder}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              style={styles.textArea}
-            />
-          </View>
-
-          <View style={styles.footer}>
-            <Button title={t.patientInfo.startScreening} onPress={handleStartScreening} icon={ArrowRight} iconPosition="right" />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+            <View style={styles.footer}>
+              <Button
+                title={t.patientInfo.startScreening}
+                onPress={handleStartScreening}
+                icon={ArrowRight}
+                iconPosition="right"
+              />
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -158,7 +215,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FontSize.md,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.text,
   },
   textArea: {
@@ -166,7 +223,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.lg,
   },
   genderContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.md,
   },
   genderButton: {
@@ -176,7 +233,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     borderRadius: Radius.md,
     paddingVertical: Spacing.lg,
-    alignItems: 'center',
+    alignItems: "center",
   },
   genderButtonSelected: {
     backgroundColor: Colors.primary,
@@ -184,7 +241,7 @@ const styles = StyleSheet.create({
   },
   genderText: {
     fontSize: FontSize.md,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.text,
   },
   genderTextSelected: {

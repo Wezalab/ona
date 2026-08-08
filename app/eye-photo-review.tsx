@@ -1,10 +1,17 @@
-import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Image } from 'react-native';
-import { ArrowRight, Camera, Clock } from 'lucide-react-native';
-import { useApp } from '@/contexts/AppContext';
-import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
-import { Badge, Button, Card, ScreenHeader, StepProgress } from '@/components/ui';
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
+import { ArrowRight, Camera, Clock } from "lucide-react-native";
+import { useApp } from "@/contexts/AppContext";
+import Colors, { FontSize, Radius, Spacing } from "@/constants/colors";
+import {
+  Badge,
+  Button,
+  Card,
+  ScreenHeader,
+  StepProgress,
+} from "@/components/ui";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function EyePhotoReviewScreen() {
   const router = useRouter();
@@ -13,7 +20,7 @@ export default function EyePhotoReviewScreen() {
 
   useEffect(() => {
     if (!eyeImages) {
-      router.replace('/screening-results');
+      router.replace("/screening-results");
     }
   }, [eyeImages, router]);
 
@@ -35,45 +42,72 @@ export default function EyePhotoReviewScreen() {
   ].filter((entry) => !!entry.photo);
 
   const handleContinue = () => {
-    router.replace('/screening-results');
+    router.replace("/screening-results");
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.stepBar}>
-        <StepProgress steps={steps} currentStepIndex={3} />
-      </View>
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <ScreenHeader icon={Camera} title={t.eyePhotoReview.title} subtitle={t.eyePhotoReview.subtitle} compact />
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.stepBar}>
+          <StepProgress steps={steps} currentStepIndex={3} />
+        </View>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.contentContainer}
+        >
+          <ScreenHeader
+            icon={Camera}
+            title={t.eyePhotoReview.title}
+            subtitle={t.eyePhotoReview.subtitle}
+            compact
+          />
 
-        <View style={styles.content}>
-          {entries.length === 0 ? (
-            <Text style={styles.noPhotosText}>{t.eyePhotoReview.noPhotosMessage}</Text>
-          ) : (
-            entries.map((entry) => (
-              <Card key={entry.label} elevated>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.eyeLabel}>{entry.label}</Text>
-                  <Badge label={t.eyePhotoReview.pendingBadge} tone="warning" dot />
-                </View>
-                {entry.photo ? (
-                  <Image source={{ uri: entry.photo.imageUri }} style={styles.thumbnail} resizeMode="cover" />
-                ) : null}
-              </Card>
-            ))
-          )}
+          <View style={styles.content}>
+            {entries.length === 0 ? (
+              <Text style={styles.noPhotosText}>
+                {t.eyePhotoReview.noPhotosMessage}
+              </Text>
+            ) : (
+              entries.map((entry) => (
+                <Card key={entry.label} elevated>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.eyeLabel}>{entry.label}</Text>
+                    <Badge
+                      label={t.eyePhotoReview.pendingBadge}
+                      tone="warning"
+                      dot
+                    />
+                  </View>
+                  {entry.photo ? (
+                    <Image
+                      source={{ uri: entry.photo.imageUri }}
+                      style={styles.thumbnail}
+                      resizeMode="cover"
+                    />
+                  ) : null}
+                </Card>
+              ))
+            )}
 
-          <View style={styles.noticeBox}>
-            <Clock size={20} color={Colors.info} />
-            <Text style={styles.noticeText}>{t.eyePhotoReview.savedMessage}</Text>
+            <View style={styles.noticeBox}>
+              <Clock size={20} color={Colors.info} />
+              <Text style={styles.noticeText}>
+                {t.eyePhotoReview.savedMessage}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        <View style={styles.footer}>
-          <Button title={t.eyePhotoReview.continueButton} onPress={handleContinue} icon={ArrowRight} iconPosition="right" />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          <View style={styles.footer}>
+            <Button
+              title={t.eyePhotoReview.continueButton}
+              onPress={handleContinue}
+              icon={ArrowRight}
+              iconPosition="right"
+            />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -98,18 +132,18 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
   },
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: Spacing.md,
   },
   eyeLabel: {
     fontSize: FontSize.lg,
-    fontWeight: '700',
+    fontWeight: "700",
     color: Colors.text,
   },
   thumbnail: {
-    width: '100%',
+    width: "100%",
     height: 180,
     borderRadius: Radius.md,
     backgroundColor: Colors.surfaceElevated,
@@ -117,11 +151,11 @@ const styles = StyleSheet.create({
   noPhotosText: {
     fontSize: FontSize.base,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
   },
   noticeBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: Spacing.md,
     backgroundColor: Colors.infoLight,
     padding: Spacing.lg,
