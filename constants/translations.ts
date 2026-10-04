@@ -53,6 +53,36 @@ export interface Translations {
     serverDesc: string;
     blockchain: string;
     blockchainDesc: string;
+    cataract: string;
+    cataractDesc: string;
+    disclaimer: string;
+  };
+
+  cataract: {
+    title: string;
+    intro: string;
+    signsTitle: string;
+    sign1: string;
+    sign2: string;
+    sign3: string;
+    sign4: string;
+    tipsTitle: string;
+    tip1: string;
+    tip2: string;
+    tip3: string;
+    tip4: string;
+    startCapture: string;
+    takePhoto: string;
+    retake: string;
+    usePhoto: string;
+    cameraPermission: string;
+    allowCamera: string;
+    resultTitle: string;
+    resultPending: string;
+    resultBody: string;
+    disclaimer: string;
+    done: string;
+    whichEye: string;
   };
   
   patientInfo: {
@@ -289,6 +319,36 @@ export const translations: Record<Language, Translations> = {
       serverDesc: 'Sign in, choose a clinic and sync data',
       blockchain: 'Blockchain',
       blockchainDesc: 'Anonymized impact proofs on Starknet',
+      cataract: 'Cataract Check',
+      cataractDesc: 'Photo check for signs of cataract',
+      disclaimer: 'Screening tool only - Not a medical diagnosis',
+    },
+
+    cataract: {
+      title: 'Cataract Check',
+      intro: 'Take a clear photo of the eye to help a specialist look for signs of cataract.',
+      signsTitle: 'Common signs',
+      sign1: 'Cloudy or blurry vision',
+      sign2: 'Glare and halos around lights',
+      sign3: 'Faded or yellowed colors',
+      sign4: 'Poor night vision',
+      tipsTitle: 'Photo tips',
+      tip1: 'Use good, even lighting',
+      tip2: 'Hold the phone 10-15 cm from the eye',
+      tip3: 'Ask the person to look straight ahead',
+      tip4: 'Keep the eye wide open and steady',
+      startCapture: 'Start photo check',
+      takePhoto: 'Take photo',
+      retake: 'Retake',
+      usePhoto: 'Use this photo',
+      cameraPermission: 'We need camera access to photograph the eye.',
+      allowCamera: 'Allow camera',
+      resultTitle: 'Photo captured',
+      resultPending: 'Pending specialist review',
+      resultBody: 'This photo has not been analysed automatically. A trained specialist must review it to confirm or rule out cataract. If symptoms are present, refer the patient to an eye clinic.',
+      disclaimer: 'Screening aid only - not a medical diagnosis',
+      done: 'Back to home',
+      whichEye: 'Photograph one eye at a time',
     },
     
     patientInfo: {
@@ -523,6 +583,36 @@ export const translations: Record<Language, Translations> = {
       serverDesc: 'Se connecter, choisir une clinique et synchroniser',
       blockchain: 'Blockchain',
       blockchainDesc: 'Preuves d\'impact anonymisées sur Starknet',
+      cataract: 'Test de la cataracte',
+      cataractDesc: 'Photo pour rechercher des signes de cataracte',
+      disclaimer: 'Outil de dépistage uniquement - Pas un diagnostic médical',
+    },
+
+    cataract: {
+      title: 'Test de la cataracte',
+      intro: 'Prenez une photo nette de l\'œil pour aider un spécialiste à rechercher des signes de cataracte.',
+      signsTitle: 'Signes courants',
+      sign1: 'Vision trouble ou voilée',
+      sign2: 'Éblouissement et halos autour des lumières',
+      sign3: 'Couleurs ternes ou jaunies',
+      sign4: 'Mauvaise vision nocturne',
+      tipsTitle: 'Conseils photo',
+      tip1: 'Utilisez un éclairage bon et uniforme',
+      tip2: 'Tenez le téléphone à 10-15 cm de l\'œil',
+      tip3: 'Demandez de regarder droit devant',
+      tip4: 'Gardez l\'œil bien ouvert et immobile',
+      startCapture: 'Démarrer la photo',
+      takePhoto: 'Prendre la photo',
+      retake: 'Reprendre',
+      usePhoto: 'Utiliser cette photo',
+      cameraPermission: 'L\'accès à la caméra est nécessaire pour photographier l\'œil.',
+      allowCamera: 'Autoriser la caméra',
+      resultTitle: 'Photo enregistrée',
+      resultPending: 'En attente de validation par un spécialiste',
+      resultBody: 'Cette photo n\'a pas été analysée automatiquement. Un spécialiste doit l\'examiner pour confirmer ou écarter une cataracte. En cas de symptômes, orientez le patient vers une clinique ophtalmologique.',
+      disclaimer: 'Outil de dépistage uniquement - Pas un diagnostic médical',
+      done: 'Retour à l\'accueil',
+      whichEye: 'Photographiez un œil à la fois',
     },
     
     patientInfo: {
@@ -758,6 +848,36 @@ export const translations: Record<Language, Translations> = {
       serverDesc: 'Ingia, chagua kliniki na sawazisha data',
       blockchain: 'Blockchain',
       blockchainDesc: 'Uthibitisho wa athari usiojulikana kwenye Starknet',
+      cataract: 'Cataract Check',
+      cataractDesc: 'Photo check for signs of cataract',
+      disclaimer: 'Screening tool only - Not a medical diagnosis',
+    },
+
+    cataract: {
+      title: 'Cataract Check',
+      intro: 'Take a clear photo of the eye to help a specialist look for signs of cataract.',
+      signsTitle: 'Common signs',
+      sign1: 'Cloudy or blurry vision',
+      sign2: 'Glare and halos around lights',
+      sign3: 'Faded or yellowed colors',
+      sign4: 'Poor night vision',
+      tipsTitle: 'Photo tips',
+      tip1: 'Use good, even lighting',
+      tip2: 'Hold the phone 10-15 cm from the eye',
+      tip3: 'Ask the person to look straight ahead',
+      tip4: 'Keep the eye wide open and steady',
+      startCapture: 'Start photo check',
+      takePhoto: 'Take photo',
+      retake: 'Retake',
+      usePhoto: 'Use this photo',
+      cameraPermission: 'We need camera access to photograph the eye.',
+      allowCamera: 'Allow camera',
+      resultTitle: 'Photo captured',
+      resultPending: 'Pending specialist review',
+      resultBody: 'This photo has not been analysed automatically. A trained specialist must review it to confirm or rule out cataract. If symptoms are present, refer the patient to an eye clinic.',
+      disclaimer: 'Screening aid only - not a medical diagnosis',
+      done: 'Back to home',
+      whichEye: 'Photograph one eye at a time',
     },
     
     patientInfo: {
@@ -993,6 +1113,36 @@ export const translations: Record<Language, Translations> = {
       serverDesc: 'Kokota, pona kliniki mpe kosala boyokani',
       blockchain: 'Blockchain',
       blockchainDesc: 'Bilembo ya bopusi oyo eyebani te na Starknet',
+      cataract: 'Cataract Check',
+      cataractDesc: 'Photo check for signs of cataract',
+      disclaimer: 'Screening tool only - Not a medical diagnosis',
+    },
+
+    cataract: {
+      title: 'Cataract Check',
+      intro: 'Take a clear photo of the eye to help a specialist look for signs of cataract.',
+      signsTitle: 'Common signs',
+      sign1: 'Cloudy or blurry vision',
+      sign2: 'Glare and halos around lights',
+      sign3: 'Faded or yellowed colors',
+      sign4: 'Poor night vision',
+      tipsTitle: 'Photo tips',
+      tip1: 'Use good, even lighting',
+      tip2: 'Hold the phone 10-15 cm from the eye',
+      tip3: 'Ask the person to look straight ahead',
+      tip4: 'Keep the eye wide open and steady',
+      startCapture: 'Start photo check',
+      takePhoto: 'Take photo',
+      retake: 'Retake',
+      usePhoto: 'Use this photo',
+      cameraPermission: 'We need camera access to photograph the eye.',
+      allowCamera: 'Allow camera',
+      resultTitle: 'Photo captured',
+      resultPending: 'Pending specialist review',
+      resultBody: 'This photo has not been analysed automatically. A trained specialist must review it to confirm or rule out cataract. If symptoms are present, refer the patient to an eye clinic.',
+      disclaimer: 'Screening aid only - not a medical diagnosis',
+      done: 'Back to home',
+      whichEye: 'Photograph one eye at a time',
     },
     
     patientInfo: {

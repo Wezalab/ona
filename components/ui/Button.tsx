@@ -1,6 +1,7 @@
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, type StyleProp, type ViewStyle } from 'react-native';
 import type { ComponentType } from 'react';
-import Colors, { FontSize, Radius, Shadow, Spacing } from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import Colors, { FontSize, Gradients, Radius, Shadow, Spacing } from '@/constants/colors';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
 export type ButtonSize = 'md' | 'lg';
@@ -48,6 +49,7 @@ export default function Button({
   ];
   const textColor = textColorFor(variant, isDisabled);
 
+  const gradient = !isDisabled ? gradientFor[variant] : undefined;
   return (
     <TouchableOpacity
       style={containerStyles}
@@ -56,6 +58,14 @@ export default function Button({
       activeOpacity={0.8}
       testID={testID}
     >
+      {gradient ? (
+        <LinearGradient
+          colors={[...gradient]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      ) : null}
       {loading ? (
         <ActivityIndicator color={textColor} />
       ) : (
@@ -70,6 +80,12 @@ export default function Button({
     </TouchableOpacity>
   );
 }
+
+const gradientFor: Partial<Record<ButtonVariant, readonly [string, string]>> = {
+  primary: Gradients.primary,
+  secondary: Gradients.info,
+  danger: Gradients.danger,
+};
 
 function textColorFor(variant: ButtonVariant, disabled: boolean): string {
   if (disabled) {
@@ -107,7 +123,8 @@ const variantStyles = StyleSheet.create({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: Radius.lg,
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },
