@@ -1,7 +1,8 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import type { ComponentType } from 'react';
-import Colors, { FontSize, Spacing } from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import Colors, { FontSize, Gradients, Spacing } from '@/constants/colors';
 
 interface IconProps {
   size?: number;
@@ -30,7 +31,7 @@ export default function ScreenHeader(props: ScreenHeaderProps) {
   if (props.variant === 'bar') {
     const { title, onBack, rightSlot } = props;
     return (
-      <View style={styles.barHeader}>
+      <LinearGradient colors={[...Gradients.hero]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.barHeader}>
         {onBack ? (
           <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7} testID="screen-header-back">
             <ArrowLeft size={24} color={Colors.surface} />
@@ -40,7 +41,7 @@ export default function ScreenHeader(props: ScreenHeaderProps) {
         )}
         <Text style={styles.barTitle} numberOfLines={1}>{title}</Text>
         {rightSlot ?? <View style={styles.placeholder} />}
-      </View>
+      </LinearGradient>
     );
   }
 
@@ -48,7 +49,7 @@ export default function ScreenHeader(props: ScreenHeaderProps) {
   return (
     <View style={[styles.heroHeader, compact && styles.heroHeaderCompact]}>
       {Icon && (
-        <View style={[styles.heroIconWrap, { backgroundColor: `${iconColor ?? Colors.primary}18` }]}>
+        <View style={[styles.heroIconWrap, { backgroundColor: `${iconColor ?? Colors.primary}22`, borderWidth: 2, borderColor: `${iconColor ?? Colors.primary}33` }]}>
           <Icon size={compact ? 32 : 40} color={iconColor ?? Colors.primary} />
         </View>
       )}
@@ -63,7 +64,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.primary,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.xl,
     paddingHorizontal: Spacing.xl,
