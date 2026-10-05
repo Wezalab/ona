@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Plus, History, Settings, Info, Server, ShieldCheck, ScanEye } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
@@ -115,6 +116,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
     width: 200,
     height: 80,
     marginBottom: Spacing.md,
