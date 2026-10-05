@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Eye, ArrowRight } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';

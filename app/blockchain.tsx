@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { RefreshCw, ShieldCheck, ExternalLink, Wallet, Trash2, Zap } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
@@ -329,7 +330,7 @@ export default function BlockchainScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.primary },
+  safeArea: { flex: 1, backgroundColor: Colors.primaryDark },
   container: { flex: 1, backgroundColor: Colors.background },
   content: { flex: 1 },
   contentContainer: { padding: Spacing.xl, gap: Spacing.xl },

@@ -1,13 +1,6 @@
 import { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  ScrollView,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Server, LogIn, LogOut, RefreshCw, Building2 } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
@@ -184,7 +177,7 @@ export default function ApiSettingsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryDark,
   },
   container: {
     flex: 1,

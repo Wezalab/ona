@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ShieldCheck, Smartphone } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import Colors, { FontSize, Gradients, Radius, Spacing } from '@/constants/colors';
 import { Button, Card } from '@/components/ui';
 
 export default function WelcomeScreen() {
@@ -16,7 +18,7 @@ export default function WelcomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <View style={styles.header}>
+        <LinearGradient colors={[...Gradients.hero]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
           <Image
             source={require('@/assets/images/icon.png')}
             style={styles.logo}
@@ -24,7 +26,7 @@ export default function WelcomeScreen() {
           />
           <Text style={styles.title}>{t.welcome.title}</Text>
           <Text style={styles.subtitle}>{t.welcome.subtitle}</Text>
-        </View>
+        </LinearGradient>
 
         <View style={styles.features}>
           <Card style={styles.feature} elevated>
@@ -69,8 +71,12 @@ const styles = StyleSheet.create({
     paddingTop: 72,
     paddingHorizontal: Spacing.xl,
     paddingBottom: Spacing.xxl,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
   },
   logo: {
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
     width: 200,
     height: 100,
     marginBottom: Spacing.md,
@@ -78,7 +84,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: Colors.text,
+    color: Colors.surface,
     marginTop: Spacing.xl,
     marginBottom: Spacing.md,
     textAlign: 'center',
@@ -86,11 +92,12 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: FontSize.md,
     fontWeight: '600',
-    color: Colors.primary,
+    color: 'rgba(255,255,255,0.9)',
     textAlign: 'center',
   },
   features: {
     flex: 1,
+    paddingTop: Spacing.xl,
     paddingHorizontal: Spacing.xl,
     gap: Spacing.xl,
   },

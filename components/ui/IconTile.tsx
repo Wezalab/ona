@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { ComponentType } from 'react';
 import { ChevronRight } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Colors, { FontSize, Radius, Shadow, Spacing } from '@/constants/colors';
 
 interface IconProps {
@@ -20,9 +21,9 @@ interface IconTileProps {
 export default function IconTile({ icon: Icon, title, description, color = Colors.primary, onPress, chevron = true }: IconTileProps) {
   return (
     <TouchableOpacity style={styles.tile} onPress={onPress} activeOpacity={0.7}>
-      <View style={[styles.iconWrap, { backgroundColor: `${color}18` }]}>
-        <Icon size={30} color={color} />
-      </View>
+      <LinearGradient colors={[color, `${color}AA`]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconWrap}>
+        <Icon size={28} color="#FFFFFF" />
+      </LinearGradient>
       <View style={styles.content}>
         <Text style={styles.title}>{title}</Text>
         {description ? <Text style={styles.description}>{description}</Text> : null}
@@ -37,7 +38,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.xl,
     padding: Spacing.lg,
     gap: Spacing.lg,
     borderWidth: 1,
@@ -45,9 +46,9 @@ const styles = StyleSheet.create({
     ...Shadow.card,
   },
   iconWrap: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },

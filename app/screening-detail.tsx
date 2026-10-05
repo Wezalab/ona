@@ -1,5 +1,6 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, Platform, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Platform, Alert, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FileText, User, Eye, Camera, Printer } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import type { RiskLevel } from '@/constants/visualAcuity';
@@ -273,7 +274,7 @@ export default function ScreeningDetailScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryDark,
   },
   container: {
     flex: 1,

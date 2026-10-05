@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Info, AlertTriangle, Shield, Target, Package } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import Colors, { Radius, Spacing } from '@/constants/colors';
@@ -70,7 +71,7 @@ export default function AboutScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryDark,
   },
   container: {
     flex: 1,
