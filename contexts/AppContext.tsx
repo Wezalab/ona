@@ -68,8 +68,8 @@ const STORAGE_KEYS = {
 };
 
 export const [AppProvider, useApp] = createContextHook(() => {
-  const [language, setLanguageState] = useState<Language>('en');
-  const [t, setT] = useState<Translations>(getTranslation('en'));
+  const [language, setLanguageState] = useState<Language>('fr');
+  const [t, setT] = useState<Translations>(getTranslation('fr'));
   const [onboardingDone, setOnboardingDone] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   

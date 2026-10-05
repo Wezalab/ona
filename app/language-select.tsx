@@ -33,8 +33,8 @@ export default function LanguageSelectScreen() {
         </LinearGradient>
 
         <View style={styles.buttonContainer}>
-          <SelectableCard title="English" subtitle="English" selected={selected === 'en'} onPress={() => handleLanguageSelect('en')} />
           <SelectableCard title="Français" subtitle="French" selected={selected === 'fr'} onPress={() => handleLanguageSelect('fr')} />
+          <SelectableCard title="English" subtitle="English" selected={selected === 'en'} onPress={() => handleLanguageSelect('en')} />
           <SelectableCard title="Kiswahili" subtitle="Swahili" selected={selected === 'sw'} onPress={() => handleLanguageSelect('sw')} />
           <SelectableCard title="Lingala" subtitle="Lingala" selected={selected === 'ln'} onPress={() => handleLanguageSelect('ln')} />
         </View>
