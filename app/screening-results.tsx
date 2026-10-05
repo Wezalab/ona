@@ -1,13 +1,14 @@
 import { useRouter } from 'expo-router';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { CheckCircle2, AlertTriangle, AlertCircle, Save, CloudUpload, Camera } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { useApi } from '@/contexts/ApiContext';
 import { useStarknet } from '@/hooks/useStarknet';
 import type { Sex } from '@/types/api';
 import type { RiskLevel } from '@/constants/visualAcuity';
-import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
+import Colors, { FontSize, Gradients, Radius, Spacing } from '@/constants/colors';
 import React, { useState } from 'react';
 import { Badge, Button, Card, StepProgress } from '@/components/ui';
 import type { BadgeTone } from '@/components/ui';
@@ -158,16 +159,21 @@ export default function ScreeningResultsScreen() {
         <StepProgress steps={steps} currentStepIndex={4} />
       </View>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <View style={styles.header}>
-          <View style={[styles.riskBadgeLarge, { backgroundColor: `${getRiskColor(overallRisk)}20` }]}>
+        <LinearGradient
+          colors={[...Gradients[overallRisk === 'low' ? 'success' : overallRisk === 'medium' ? 'warning' : 'danger']]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.header}
+        >
+          <View style={styles.riskBadgeLarge}>
             {React.createElement(getRiskIcon(overallRisk), {
               size: 48,
-              color: getRiskColor(overallRisk),
+              color: '#FFFFFF',
             })}
           </View>
           <Text style={styles.title}>{t.results.title}</Text>
           <Badge label={getRiskText(overallRisk)} tone={overallRisk as BadgeTone} size="md" />
-        </View>
+        </LinearGradient>
 
         <View style={styles.content}>
           {visualAcuity && (
@@ -179,7 +185,7 @@ export default function ScreeningResultsScreen() {
                   { label: t.results.rightEye, result: visualAcuity.rightEye },
                   { label: t.results.leftEye, result: visualAcuity.leftEye },
                 ].map(({ label, result }) => (
-                  <Card key={label} style={styles.resultCard}>
+                  <Card key={label} style={styles.resultCard} elevated>
                     <Text style={styles.eyeLabel}>{label}</Text>
                     <Badge label={getRiskText(result.risk)} tone={result.risk as BadgeTone} size="sm" />
                     <Text style={styles.scoreText}>{result.belowChart ? `< ${result.snellen}` : result.snellen}</Text>
@@ -255,7 +261,7 @@ const styles = StyleSheet.create({
   },
   stepBar: {
     paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.md,
+    paddingTop: Spacing.lg,
     paddingBottom: Spacing.sm,
   },
   container: {
@@ -270,19 +276,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
     paddingBottom: Spacing.xxl,
     gap: Spacing.md,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    marginBottom: Spacing.xl,
   },
   riskBadgeLarge: {
     width: 96,
     height: 96,
     borderRadius: 48,
+    backgroundColor: 'rgba(255,255,255,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing.sm,
   },
   title: {
     fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.text,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
   content: {
     paddingHorizontal: Spacing.xl,
@@ -338,7 +348,7 @@ const styles = StyleSheet.create({
   },
   referralBox: {
     padding: Spacing.lg,
-    borderRadius: Radius.md,
+    borderRadius: Radius.xl,
     borderLeftWidth: 4,
   },
   referralText: {
@@ -353,7 +363,7 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     backgroundColor: Colors.warningLight,
     padding: Spacing.lg,
-    borderRadius: Radius.md,
+    borderRadius: Radius.xl,
     borderLeftWidth: 4,
     borderLeftColor: Colors.warning,
   },

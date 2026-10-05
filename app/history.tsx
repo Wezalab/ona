@@ -1,10 +1,11 @@
 import { useRouter } from 'expo-router';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { History as HistoryIcon, FileText } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import type { RiskLevel } from '@/constants/visualAcuity';
-import Colors, { FontSize, Radius, Shadow, Spacing } from '@/constants/colors';
+import Colors, { FontSize, Gradients, Radius, Shadow, Spacing } from '@/constants/colors';
 import { Badge, BottomTabBar, EmptyState, ScreenHeader } from '@/components/ui';
 import type { BadgeTone } from '@/components/ui';
 
@@ -55,7 +56,9 @@ export default function HistoryScreen() {
               >
                 <View style={styles.cardHeader}>
                   <View style={styles.cardTitleRow}>
-                    <FileText size={20} color={Colors.primary} />
+                    <LinearGradient colors={[...Gradients.violet]} style={styles.cardAvatar}>
+                      <FileText size={20} color="#FFFFFF" />
+                    </LinearGradient>
                     <Text style={styles.cardTitle}>
                       {screening.patientInfo.patientId || `Dépistage #${screening.id.slice(-8)}`}
                     </Text>
@@ -108,10 +111,8 @@ const styles = StyleSheet.create({
   },
   screeningCard: {
     backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.xl,
     padding: Spacing.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
     gap: Spacing.md,
     ...Shadow.card,
   },
@@ -125,6 +126,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.sm,
     flex: 1,
+  },
+  cardAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardTitle: {
     fontSize: FontSize.md,
@@ -148,7 +156,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.warningLight,
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: Radius.sm,
+    borderRadius: Radius.pill,
     alignSelf: 'flex-start',
   },
   referralText: {

@@ -2,9 +2,10 @@ import { useRouter } from 'expo-router';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Eye, ArrowRight } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
+import Colors, { FontSize, Gradients, Radius, Spacing } from '@/constants/colors';
 import type { VisualAcuityResult } from '@/contexts/AppContext';
 import {
   SNELLEN_DENOMINATORS,
@@ -206,6 +207,7 @@ export default function VATestScreen() {
         <View style={styles.controls}>
           <View style={styles.directionsRow}>
             <TouchableOpacity style={styles.directionButton} onPress={() => handleAnswer('up')} activeOpacity={0.7}>
+              <LinearGradient colors={[...Gradients.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
               <Text style={styles.directionText}>↑</Text>
               <Text style={styles.directionLabel}>{t.visualAcuity.up}</Text>
             </TouchableOpacity>
@@ -213,11 +215,13 @@ export default function VATestScreen() {
 
           <View style={styles.directionsRow}>
             <TouchableOpacity style={styles.directionButton} onPress={() => handleAnswer('left')} activeOpacity={0.7}>
+              <LinearGradient colors={[...Gradients.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
               <Text style={styles.directionText}>←</Text>
               <Text style={styles.directionLabel}>{t.visualAcuity.left}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.directionButton} onPress={() => handleAnswer('right')} activeOpacity={0.7}>
+              <LinearGradient colors={[...Gradients.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
               <Text style={styles.directionText}>→</Text>
               <Text style={styles.directionLabel}>{t.visualAcuity.right}</Text>
             </TouchableOpacity>
@@ -225,6 +229,7 @@ export default function VATestScreen() {
 
           <View style={styles.directionsRow}>
             <TouchableOpacity style={styles.directionButton} onPress={() => handleAnswer('down')} activeOpacity={0.7}>
+              <LinearGradient colors={[...Gradients.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
               <Text style={styles.directionText}>↓</Text>
               <Text style={styles.directionLabel}>{t.visualAcuity.down}</Text>
             </TouchableOpacity>
@@ -250,16 +255,22 @@ const styles = StyleSheet.create({
   },
   stepBar: {
     paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.md,
+    paddingTop: Spacing.lg,
     paddingBottom: Spacing.sm,
   },
   header: {
     paddingHorizontal: Spacing.xl,
     paddingBottom: Spacing.lg,
+    paddingTop: Spacing.md,
     backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomLeftRadius: Radius.xxl,
+    borderBottomRightRadius: Radius.xxl,
     gap: Spacing.sm,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
   },
   eyeIndicator: {
     flexDirection: 'row',
@@ -319,7 +330,8 @@ const styles = StyleSheet.create({
   },
   optotype: {
     fontWeight: '900',
-    color: Colors.text,
+    // Pure black on white: maximum contrast is required for a valid acuity test.
+    color: '#000000',
   },
   controls: {
     paddingHorizontal: Spacing.xl,
@@ -334,8 +346,8 @@ const styles = StyleSheet.create({
   directionButton: {
     width: 100,
     aspectRatio: 1,
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.xs,
@@ -357,7 +369,7 @@ const styles = StyleSheet.create({
   cantSeeButton: {
     flexDirection: 'row',
     backgroundColor: Colors.textSecondary,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.pill,
     paddingVertical: Spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
