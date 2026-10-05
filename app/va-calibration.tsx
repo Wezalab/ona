@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +15,7 @@ const STEP_PT = 4;
 
 export default function VACalibrationScreen() {
   const router = useRouter();
+  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const { t, setCalibration } = useApp();
   const [step, setStep] = useState<'card' | 'distance'>('card');
   const [cardWidthPt, setCardWidthPt] = useState(SCREEN_WIDTH * 0.6);
@@ -42,7 +43,9 @@ export default function VACalibrationScreen() {
   const handleDistanceSelected = (distanceMeters: TestDistanceMeters) => {
     if (!pixelsPerMM) return;
     setCalibration({ pixelsPerMM, testDistanceMeters: distanceMeters });
-    router.push('/va-test');
+    // Opened from the cataract exam: go back to it instead of starting the screening test.
+    if (returnTo === 'back') router.back();
+    else router.push('/va-eye-select');
   };
 
   return (

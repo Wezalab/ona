@@ -95,6 +95,18 @@ export interface Translations {
     whichEye: string;
   };
   
+  eyeSelect: {
+    title: string;
+    subtitle: string;
+    testThisEye: string;
+    retest: string;
+    notTested: string;
+    viewResults: string;
+    bothNeeded: string;
+    coverRight: string;
+    coverLeft: string;
+  };
+
   cataractExam: {
     title: string;
     intro: string;
@@ -181,6 +193,19 @@ export interface Translations {
     viewDetails: string;
     rightEyeLabel: string;
     leftEyeLabel: string;
+    startTest: string;
+    retest: string;
+    notTested: string;
+    pinholeNotNeeded: string;
+    calibrateFirst: string;
+    calibrate: string;
+    belowTitle: string;
+    belowHelp: string;
+    saveResult: string;
+    stopTest: string;
+    testingTitle: string;
+    usePinhole: string;
+    eyeTestedLabel: string;
   };
 
   patientInfo: {
@@ -459,6 +484,18 @@ export const translations: Record<Language, Translations> = {
       whichEye: 'Photograph one eye at a time',
     },
     
+    eyeSelect: {
+      title: 'Choose the eye to test',
+      subtitle: 'Test one eye at a time and cover the other eye.',
+      testThisEye: 'Test this eye',
+      retest: 'Test again',
+      notTested: 'Not tested',
+      viewResults: 'View results',
+      bothNeeded: 'Test both eyes to see the results.',
+      coverRight: 'Cover the right eye',
+      coverLeft: 'Cover the left eye',
+    },
+
     cataractExam: {
       title: 'Cataract examination',
       intro: 'Hospital-style cataract work-up: registration, history, acuity, torch exam and lens grading.',
@@ -493,7 +530,7 @@ export const translations: Record<Language, Translations> = {
       rFamily: 'Family history of cataract',
       rHypertension: 'High blood pressure',
       visionTitle: 'Visual acuity (Snellen)',
-      visionHelp: 'Test each eye separately at 6 m. Record the smallest line the patient reads.',
+      visionHelp: 'Run the tumbling-E test on each eye, starting at the 6/60 line. Repeat with the pinhole when acuity is worse than 6/9.',
       unaided: 'Without glasses',
       pinhole: 'With pinhole',
       vaLegend: 'CF = counting fingers, HM = hand movements, PL = light perception',
@@ -545,6 +582,19 @@ export const translations: Record<Language, Translations> = {
       viewDetails: 'Examination details',
       rightEyeLabel: 'Right eye',
       leftEyeLabel: 'Left eye',
+      startTest: 'Start test',
+      retest: 'Test again',
+      notTested: 'Not tested',
+      pinholeNotNeeded: 'Not needed (acuity 6/9 or better)',
+      calibrateFirst: 'Calibrate the screen first so the letters are exactly the right size.',
+      calibrate: 'Calibrate screen',
+      belowTitle: 'Could not read the 6/60 line',
+      belowHelp: 'Record the best result you can get: 3/60 (moving closer), counting fingers, hand movements or light perception.',
+      saveResult: 'Save result',
+      stopTest: 'Stop test',
+      testingTitle: 'Visual acuity test',
+      usePinhole: 'Patient looks through the pinhole',
+      eyeTestedLabel: 'Tested',
     },
 
     patientInfo: {
@@ -821,6 +871,18 @@ export const translations: Record<Language, Translations> = {
       whichEye: 'Photographiez un œil à la fois',
     },
     
+    eyeSelect: {
+      title: 'Choisissez l\'œil à tester',
+      subtitle: 'Testez un œil à la fois en couvrant l\'autre œil.',
+      testThisEye: 'Tester cet œil',
+      retest: 'Refaire le test',
+      notTested: 'Non testé',
+      viewResults: 'Voir les résultats',
+      bothNeeded: 'Testez les deux yeux pour voir les résultats.',
+      coverRight: 'Couvrez l\'œil droit',
+      coverLeft: 'Couvrez l\'œil gauche',
+    },
+
     cataractExam: {
       title: 'Examen de la cataracte',
       intro: 'Bilan de cataracte type hôpital : enregistrement, antécédents, acuité, examen à la lampe et gradation du cristallin.',
@@ -907,6 +969,19 @@ export const translations: Record<Language, Translations> = {
       viewDetails: 'Détails de l\'examen',
       rightEyeLabel: 'Œil droit',
       leftEyeLabel: 'Œil gauche',
+      startTest: 'Démarrer le test',
+      retest: 'Refaire le test',
+      notTested: 'Non testé',
+      pinholeNotNeeded: 'Inutile (acuité 6/9 ou mieux)',
+      calibrateFirst: 'Calibrez d\'abord l\'écran pour que les lettres aient exactement la bonne taille.',
+      calibrate: 'Calibrer l\'écran',
+      belowTitle: 'Ligne 6/60 non lue',
+      belowHelp: 'Notez le meilleur résultat possible : 3/60 (en se rapprochant), compte les doigts, mouvements de la main ou perception lumineuse.',
+      saveResult: 'Enregistrer le résultat',
+      stopTest: 'Arrêter le test',
+      testingTitle: 'Test d\'acuité visuelle',
+      usePinhole: 'Le patient regarde à travers le sténopé',
+      eyeTestedLabel: 'Testé',
     },
 
     patientInfo: {
@@ -1184,6 +1259,18 @@ export const translations: Record<Language, Translations> = {
       whichEye: 'Photograph one eye at a time',
     },
     
+    eyeSelect: {
+      title: 'Choose the eye to test',
+      subtitle: 'Test one eye at a time and cover the other eye.',
+      testThisEye: 'Test this eye',
+      retest: 'Test again',
+      notTested: 'Not tested',
+      viewResults: 'View results',
+      bothNeeded: 'Test both eyes to see the results.',
+      coverRight: 'Cover the right eye',
+      coverLeft: 'Cover the left eye',
+    },
+
     cataractExam: {
       title: 'Cataract examination',
       intro: 'Hospital-style cataract work-up: registration, history, acuity, torch exam and lens grading.',
@@ -1218,7 +1305,7 @@ export const translations: Record<Language, Translations> = {
       rFamily: 'Family history of cataract',
       rHypertension: 'High blood pressure',
       visionTitle: 'Visual acuity (Snellen)',
-      visionHelp: 'Test each eye separately at 6 m. Record the smallest line the patient reads.',
+      visionHelp: 'Run the tumbling-E test on each eye, starting at the 6/60 line. Repeat with the pinhole when acuity is worse than 6/9.',
       unaided: 'Without glasses',
       pinhole: 'With pinhole',
       vaLegend: 'CF = counting fingers, HM = hand movements, PL = light perception',
@@ -1270,6 +1357,19 @@ export const translations: Record<Language, Translations> = {
       viewDetails: 'Examination details',
       rightEyeLabel: 'Right eye',
       leftEyeLabel: 'Left eye',
+      startTest: 'Start test',
+      retest: 'Test again',
+      notTested: 'Not tested',
+      pinholeNotNeeded: 'Not needed (acuity 6/9 or better)',
+      calibrateFirst: 'Calibrate the screen first so the letters are exactly the right size.',
+      calibrate: 'Calibrate screen',
+      belowTitle: 'Could not read the 6/60 line',
+      belowHelp: 'Record the best result you can get: 3/60 (moving closer), counting fingers, hand movements or light perception.',
+      saveResult: 'Save result',
+      stopTest: 'Stop test',
+      testingTitle: 'Visual acuity test',
+      usePinhole: 'Patient looks through the pinhole',
+      eyeTestedLabel: 'Tested',
     },
 
     patientInfo: {
@@ -1547,6 +1647,18 @@ export const translations: Record<Language, Translations> = {
       whichEye: 'Photograph one eye at a time',
     },
     
+    eyeSelect: {
+      title: 'Choose the eye to test',
+      subtitle: 'Test one eye at a time and cover the other eye.',
+      testThisEye: 'Test this eye',
+      retest: 'Test again',
+      notTested: 'Not tested',
+      viewResults: 'View results',
+      bothNeeded: 'Test both eyes to see the results.',
+      coverRight: 'Cover the right eye',
+      coverLeft: 'Cover the left eye',
+    },
+
     cataractExam: {
       title: 'Cataract examination',
       intro: 'Hospital-style cataract work-up: registration, history, acuity, torch exam and lens grading.',
@@ -1581,7 +1693,7 @@ export const translations: Record<Language, Translations> = {
       rFamily: 'Family history of cataract',
       rHypertension: 'High blood pressure',
       visionTitle: 'Visual acuity (Snellen)',
-      visionHelp: 'Test each eye separately at 6 m. Record the smallest line the patient reads.',
+      visionHelp: 'Run the tumbling-E test on each eye, starting at the 6/60 line. Repeat with the pinhole when acuity is worse than 6/9.',
       unaided: 'Without glasses',
       pinhole: 'With pinhole',
       vaLegend: 'CF = counting fingers, HM = hand movements, PL = light perception',
@@ -1633,6 +1745,19 @@ export const translations: Record<Language, Translations> = {
       viewDetails: 'Examination details',
       rightEyeLabel: 'Right eye',
       leftEyeLabel: 'Left eye',
+      startTest: 'Start test',
+      retest: 'Test again',
+      notTested: 'Not tested',
+      pinholeNotNeeded: 'Not needed (acuity 6/9 or better)',
+      calibrateFirst: 'Calibrate the screen first so the letters are exactly the right size.',
+      calibrate: 'Calibrate screen',
+      belowTitle: 'Could not read the 6/60 line',
+      belowHelp: 'Record the best result you can get: 3/60 (moving closer), counting fingers, hand movements or light perception.',
+      saveResult: 'Save result',
+      stopTest: 'Stop test',
+      testingTitle: 'Visual acuity test',
+      usePinhole: 'Patient looks through the pinhole',
+      eyeTestedLabel: 'Tested',
     },
 
     patientInfo: {

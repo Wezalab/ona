@@ -20,6 +20,7 @@ function RootLayoutNav() {
       <Stack.Screen name="home" />
       <Stack.Screen name="patient-info" />
       <Stack.Screen name="va-calibration" />
+      <Stack.Screen name="va-eye-select" />
       <Stack.Screen name="va-test" />
       <Stack.Screen name="va-result" />
       <Stack.Screen name="eye-capture" />

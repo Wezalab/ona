@@ -52,6 +52,9 @@ export interface ScreeningRecord {
 
 export interface CurrentScreening {
   patientInfo?: PatientInfo;
+  /** Per-eye results while the vision test is in progress (one eye at a time). */
+  vaRight?: EyeVisualAcuity;
+  vaLeft?: EyeVisualAcuity;
   visualAcuity?: VisualAcuityResult;
   eyeImages?: EyeImageResult;
 }
@@ -154,6 +157,16 @@ export const [AppProvider, useApp] = createContextHook(() => {
     setCurrentScreening(prev => ({ ...prev, visualAcuity: result }));
   };
 
+  const setEyeAcuity = (eye: 'right' | 'left', result: EyeVisualAcuity, distanceMeters: TestDistanceMeters) => {
+    setCurrentScreening(prev => {
+      const next: CurrentScreening = { ...prev, [eye === 'right' ? 'vaRight' : 'vaLeft']: result };
+      if (next.vaRight && next.vaLeft) {
+        next.visualAcuity = { distanceMeters, rightEye: next.vaRight, leftEye: next.vaLeft };
+      }
+      return next;
+    });
+  };
+
   const updateEyeImages = (result: EyeImageResult) => {
     setCurrentScreening(prev => ({ ...prev, eyeImages: result }));
   };
@@ -241,6 +254,7 @@ export const [AppProvider, useApp] = createContextHook(() => {
     startNewScreening,
     updatePatientInfo,
     updateVisualAcuity,
+    setEyeAcuity,
     updateEyeImages,
     saveScreening,
     screenings,
