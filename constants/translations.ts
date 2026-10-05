@@ -105,6 +105,11 @@ export interface Translations {
     bothNeeded: string;
     coverRight: string;
     coverLeft: string;
+    chooseLine: string;
+    chooseLineHint: string;
+    recordLine: string;
+    recordLineHelp: string;
+    recordConfirm: string;
   };
 
   cataractExam: {
@@ -494,6 +499,11 @@ export const translations: Record<Language, Translations> = {
       bothNeeded: 'Test both eyes to see the results.',
       coverRight: 'Cover the right eye',
       coverLeft: 'Cover the left eye',
+      chooseLine: 'Choose the line',
+      chooseLineHint: 'Tap a line to show its letter size. Answers still score automatically.',
+      recordLine: 'Record result',
+      recordLineHelp: 'Already established by the clinician? Save this line as the result.',
+      recordConfirm: 'Save as result',
     },
 
     cataractExam: {
@@ -881,6 +891,11 @@ export const translations: Record<Language, Translations> = {
       bothNeeded: 'Testez les deux yeux pour voir les résultats.',
       coverRight: 'Couvrez l\'œil droit',
       coverLeft: 'Couvrez l\'œil gauche',
+      chooseLine: 'Choisir la ligne',
+      chooseLineHint: 'Touchez une ligne pour afficher la taille du E. Les réponses sont toujours notées automatiquement.',
+      recordLine: 'Enregistrer le résultat',
+      recordLineHelp: 'Résultat déjà établi par le clinicien ? Enregistrez cette ligne comme résultat.',
+      recordConfirm: 'Enregistrer comme résultat',
     },
 
     cataractExam: {
@@ -1269,6 +1284,11 @@ export const translations: Record<Language, Translations> = {
       bothNeeded: 'Test both eyes to see the results.',
       coverRight: 'Cover the right eye',
       coverLeft: 'Cover the left eye',
+      chooseLine: 'Choose the line',
+      chooseLineHint: 'Tap a line to show its letter size. Answers still score automatically.',
+      recordLine: 'Record result',
+      recordLineHelp: 'Already established by the clinician? Save this line as the result.',
+      recordConfirm: 'Save as result',
     },
 
     cataractExam: {
@@ -1657,6 +1677,11 @@ export const translations: Record<Language, Translations> = {
       bothNeeded: 'Test both eyes to see the results.',
       coverRight: 'Cover the right eye',
       coverLeft: 'Cover the left eye',
+      chooseLine: 'Choose the line',
+      chooseLineHint: 'Tap a line to show its letter size. Answers still score automatically.',
+      recordLine: 'Record result',
+      recordLineHelp: 'Already established by the clinician? Save this line as the result.',
+      recordConfirm: 'Save as result',
     },
 
     cataractExam: {
