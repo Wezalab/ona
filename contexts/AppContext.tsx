@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect } from 'react';
 import { Language, getTranslation, Translations } from '@/constants/translations';
 import type { EyeVisualAcuity, TestDistanceMeters } from '@/constants/visualAcuity';
+import type { CataractExamRecord } from '@/constants/cataractExam';
 
 export interface PatientInfo {
   patientId?: string;
@@ -60,6 +61,7 @@ const STORAGE_KEYS = {
   ONBOARDING_DONE: 'onboarding_done',
   SCREENINGS: 'screenings',
   LAST_SYNC: 'last_sync',
+  CATARACT_EXAMS: 'cataract_exams',
 };
 
 export const [AppProvider, useApp] = createContextHook(() => {
@@ -70,6 +72,7 @@ export const [AppProvider, useApp] = createContextHook(() => {
   
   const [currentScreening, setCurrentScreening] = useState<CurrentScreening>({});
   const [screenings, setScreenings] = useState<ScreeningRecord[]>([]);
+  const [cataractExams, setCataractExams] = useState<CataractExamRecord[]>([]);
   const [lastSync, setLastSync] = useState<number | null>(null);
   const [calibration, setCalibrationState] = useState<CalibrationState | null>(null);
 
@@ -79,11 +82,12 @@ export const [AppProvider, useApp] = createContextHook(() => {
 
   const loadPersistedData = async () => {
     try {
-      const [savedLang, savedOnboarding, savedScreenings, savedLastSync] = await Promise.all([
+      const [savedLang, savedOnboarding, savedScreenings, savedLastSync, savedCataract] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.LANGUAGE),
         AsyncStorage.getItem(STORAGE_KEYS.ONBOARDING_DONE),
         AsyncStorage.getItem(STORAGE_KEYS.SCREENINGS),
         AsyncStorage.getItem(STORAGE_KEYS.LAST_SYNC),
+        AsyncStorage.getItem(STORAGE_KEYS.CATARACT_EXAMS),
       ]);
 
       if (savedLang) {
@@ -98,6 +102,10 @@ export const [AppProvider, useApp] = createContextHook(() => {
 
       if (savedScreenings) {
         setScreenings(JSON.parse(savedScreenings));
+      }
+
+      if (savedCataract) {
+        setCataractExams(JSON.parse(savedCataract));
       }
 
       if (savedLastSync) {
@@ -190,10 +198,18 @@ export const [AppProvider, useApp] = createContextHook(() => {
     return calculateOverallRisk() !== 'low';
   };
 
+  const saveCataractExam = async (exam: CataractExamRecord): Promise<CataractExamRecord> => {
+    const updated = [...cataractExams, exam];
+    await AsyncStorage.setItem(STORAGE_KEYS.CATARACT_EXAMS, JSON.stringify(updated));
+    setCataractExams(updated);
+    return exam;
+  };
+
   const clearAllData = async () => {
     try {
-      await AsyncStorage.multiRemove([STORAGE_KEYS.SCREENINGS, STORAGE_KEYS.LAST_SYNC]);
+      await AsyncStorage.multiRemove([STORAGE_KEYS.SCREENINGS, STORAGE_KEYS.LAST_SYNC, STORAGE_KEYS.CATARACT_EXAMS]);
       setScreenings([]);
+      setCataractExams([]);
       setLastSync(null);
       setCurrentScreening({});
     } catch (error) {
@@ -228,6 +244,8 @@ export const [AppProvider, useApp] = createContextHook(() => {
     updateEyeImages,
     saveScreening,
     screenings,
+    cataractExams,
+    saveCataractExam,
     clearAllData,
     syncData,
     lastSync,

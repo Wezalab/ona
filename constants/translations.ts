@@ -95,6 +95,94 @@ export interface Translations {
     whichEye: string;
   };
   
+  cataractExam: {
+    title: string;
+    intro: string;
+    startExam: string;
+    pathwayTitle: string;
+    stepRegistration: string;
+    stepHistory: string;
+    stepVision: string;
+    stepTorch: string;
+    stepLens: string;
+    stepPhotos: string;
+    stepSummary: string;
+    regTitle: string;
+    regSubtitle: string;
+    duration: string;
+    durShort: string;
+    durMedium: string;
+    durLong: string;
+    historyTitle: string;
+    symptomsTitle: string;
+    sBlur: string;
+    sGlare: string;
+    sColor: string;
+    sNight: string;
+    sDouble: string;
+    sChange: string;
+    riskTitle: string;
+    rDiabetes: string;
+    rSteroid: string;
+    rSmoking: string;
+    rTrauma: string;
+    rFamily: string;
+    rHypertension: string;
+    visionTitle: string;
+    visionHelp: string;
+    unaided: string;
+    pinhole: string;
+    vaLegend: string;
+    torchTitle: string;
+    torchHelp: string;
+    redReflex: string;
+    rrNormal: string;
+    rrDim: string;
+    rrAbsent: string;
+    pupilReaction: string;
+    pupNormal: string;
+    pupAfferent: string;
+    leukocoria: string;
+    lensTitle: string;
+    lensHelp: string;
+    nuclear: string;
+    cortical: string;
+    psc: string;
+    g0: string;
+    g1: string;
+    g2: string;
+    g3: string;
+    photosTitle: string;
+    photosHelp: string;
+    addPhoto: string;
+    skipPhoto: string;
+    cancel: string;
+    summaryTitle: string;
+    findNormal: string;
+    findMonitor: string;
+    findCataract: string;
+    findUrgent: string;
+    recRoutine: string;
+    recMonitor: string;
+    recCataract: string;
+    recUrgent: string;
+    urgRoutine: string;
+    urgSoon: string;
+    urgUrgent: string;
+    disclaimer: string;
+    completeAll: string;
+    next: string;
+    saveExam: string;
+    savedTitle: string;
+    savedBody: string;
+    openBlockchain: string;
+    backHome: string;
+    chainBadge: string;
+    viewDetails: string;
+    rightEyeLabel: string;
+    leftEyeLabel: string;
+  };
+
   patientInfo: {
     title: string;
     subtitle: string;
@@ -371,6 +459,94 @@ export const translations: Record<Language, Translations> = {
       whichEye: 'Photograph one eye at a time',
     },
     
+    cataractExam: {
+      title: 'Cataract examination',
+      intro: 'Hospital-style cataract work-up: registration, history, acuity, torch exam and lens grading.',
+      startExam: 'Start examination',
+      pathwayTitle: 'Examination steps',
+      stepRegistration: 'Registration',
+      stepHistory: 'History',
+      stepVision: 'Visual acuity',
+      stepTorch: 'Torch exam',
+      stepLens: 'Lens grading',
+      stepPhotos: 'Photos',
+      stepSummary: 'Summary',
+      regTitle: 'Patient registration',
+      regSubtitle: 'Record who is being examined',
+      duration: 'Duration of symptoms',
+      durShort: 'Under 1 month',
+      durMedium: '1-6 months',
+      durLong: 'Over 6 months',
+      historyTitle: 'Symptom history',
+      symptomsTitle: 'Current symptoms',
+      sBlur: 'Blurred or cloudy vision',
+      sGlare: 'Glare or halos around lights',
+      sColor: 'Faded or yellowed colours',
+      sNight: 'Poor night vision',
+      sDouble: 'Double vision in one eye',
+      sChange: 'Frequent change of glasses',
+      riskTitle: 'Risk factors',
+      rDiabetes: 'Diabetes',
+      rSteroid: 'Long-term steroid use',
+      rSmoking: 'Smoking',
+      rTrauma: 'Past eye injury or surgery',
+      rFamily: 'Family history of cataract',
+      rHypertension: 'High blood pressure',
+      visionTitle: 'Visual acuity (Snellen)',
+      visionHelp: 'Test each eye separately at 6 m. Record the smallest line the patient reads.',
+      unaided: 'Without glasses',
+      pinhole: 'With pinhole',
+      vaLegend: 'CF = counting fingers, HM = hand movements, PL = light perception',
+      torchTitle: 'Torch (penlight) exam',
+      torchHelp: 'In a dim room, check the red reflex from arm\'s length and the pupil reaction.',
+      redReflex: 'Red reflex',
+      rrNormal: 'Normal',
+      rrDim: 'Dim or dark',
+      rrAbsent: 'Absent',
+      pupilReaction: 'Pupil reaction',
+      pupNormal: 'Normal',
+      pupAfferent: 'Reduced (afferent defect)',
+      leukocoria: 'White pupil (leukocoria) seen',
+      lensTitle: 'Lens opacity grading (WHO)',
+      lensHelp: 'Grade each type from 0 to 3 against the WHO reference photographs, ideally with a dilated pupil.',
+      nuclear: 'Nuclear (centre)',
+      cortical: 'Cortical (spokes)',
+      psc: 'Posterior subcapsular',
+      g0: 'None',
+      g1: 'Mild',
+      g2: 'Moderate',
+      g3: 'Severe',
+      photosTitle: 'Eye photos',
+      photosHelp: 'Optional photo of each eye for specialist review. Photos are not analysed automatically.',
+      addPhoto: 'Add photo',
+      skipPhoto: 'Skip photo',
+      cancel: 'Cancel',
+      summaryTitle: 'Assessment',
+      findNormal: 'No significant lens opacity',
+      findMonitor: 'Early changes - monitor',
+      findCataract: 'Cataract suspected',
+      findUrgent: 'Urgent - other eye disease possible',
+      recRoutine: 'Routine eye check in 1-2 years.',
+      recMonitor: 'Re-examine in 6-12 months and check glasses or refraction.',
+      recCataract: 'Refer to an eye clinic for cataract surgery assessment.',
+      recUrgent: 'Refer urgently to an ophthalmologist (white pupil or afferent pupil defect).',
+      urgRoutine: 'Routine',
+      urgSoon: 'Priority referral',
+      urgUrgent: 'Urgent referral',
+      disclaimer: 'Rule-based screening aid. An ophthalmologist must confirm every finding.',
+      completeAll: 'Complete all required fields to continue.',
+      next: 'Next',
+      saveExam: 'Save examination',
+      savedTitle: 'Examination saved',
+      savedBody: 'A privacy-preserving proof (no patient data) is ready to be anchored on Starknet from the Blockchain screen.',
+      openBlockchain: 'Open Blockchain',
+      backHome: 'Back to home',
+      chainBadge: 'Cataract',
+      viewDetails: 'Examination details',
+      rightEyeLabel: 'Right eye',
+      leftEyeLabel: 'Left eye',
+    },
+
     patientInfo: {
       title: 'Patient Information',
       subtitle: 'Record basic information (optional)',
@@ -645,6 +821,94 @@ export const translations: Record<Language, Translations> = {
       whichEye: 'Photographiez un œil à la fois',
     },
     
+    cataractExam: {
+      title: 'Examen de la cataracte',
+      intro: 'Bilan de cataracte type hôpital : enregistrement, antécédents, acuité, examen à la lampe et gradation du cristallin.',
+      startExam: 'Démarrer l\'examen',
+      pathwayTitle: 'Étapes de l\'examen',
+      stepRegistration: 'Enregistrement',
+      stepHistory: 'Antécédents',
+      stepVision: 'Acuité visuelle',
+      stepTorch: 'Lampe torche',
+      stepLens: 'Gradation',
+      stepPhotos: 'Photos',
+      stepSummary: 'Résumé',
+      regTitle: 'Enregistrement du patient',
+      regSubtitle: 'Indiquez qui est examiné',
+      duration: 'Durée des symptômes',
+      durShort: 'Moins de 1 mois',
+      durMedium: '1 à 6 mois',
+      durLong: 'Plus de 6 mois',
+      historyTitle: 'Historique des symptômes',
+      symptomsTitle: 'Symptômes actuels',
+      sBlur: 'Vision trouble ou voilée',
+      sGlare: 'Éblouissement ou halos autour des lumières',
+      sColor: 'Couleurs ternes ou jaunies',
+      sNight: 'Mauvaise vision nocturne',
+      sDouble: 'Vision double avec un seul œil',
+      sChange: 'Changements fréquents de lunettes',
+      riskTitle: 'Facteurs de risque',
+      rDiabetes: 'Diabète',
+      rSteroid: 'Corticoïdes au long cours',
+      rSmoking: 'Tabagisme',
+      rTrauma: 'Traumatisme ou chirurgie oculaire',
+      rFamily: 'Antécédents familiaux de cataracte',
+      rHypertension: 'Hypertension artérielle',
+      visionTitle: 'Acuité visuelle (Snellen)',
+      visionHelp: 'Testez chaque œil séparément à 6 m. Notez la plus petite ligne lue par le patient.',
+      unaided: 'Sans lunettes',
+      pinhole: 'Avec sténopé',
+      vaLegend: 'CF = compte les doigts, HM = mouvements de la main, PL = perception lumineuse',
+      torchTitle: 'Examen à la lampe torche',
+      torchHelp: 'Dans une pièce sombre, vérifiez le reflet rouge à bout de bras et la réaction pupillaire.',
+      redReflex: 'Reflet rouge',
+      rrNormal: 'Normal',
+      rrDim: 'Faible ou sombre',
+      rrAbsent: 'Absent',
+      pupilReaction: 'Réaction pupillaire',
+      pupNormal: 'Normale',
+      pupAfferent: 'Diminuée (déficit afférent)',
+      leukocoria: 'Pupille blanche (leucocorie) observée',
+      lensTitle: 'Gradation du cristallin (OMS)',
+      lensHelp: 'Gradez chaque type de 0 à 3 selon les photographies de référence de l\'OMS, idéalement pupille dilatée.',
+      nuclear: 'Nucléaire (centre)',
+      cortical: 'Corticale (rayons)',
+      psc: 'Sous-capsulaire postérieure',
+      g0: 'Aucune',
+      g1: 'Légère',
+      g2: 'Modérée',
+      g3: 'Sévère',
+      photosTitle: 'Photos de l\'œil',
+      photosHelp: 'Photo facultative de chaque œil pour examen par un spécialiste. Les photos ne sont pas analysées automatiquement.',
+      addPhoto: 'Ajouter une photo',
+      skipPhoto: 'Passer la photo',
+      cancel: 'Annuler',
+      summaryTitle: 'Évaluation',
+      findNormal: 'Pas d\'opacité cristallinienne significative',
+      findMonitor: 'Changements débutants - surveiller',
+      findCataract: 'Cataracte suspectée',
+      findUrgent: 'Urgent - autre maladie oculaire possible',
+      recRoutine: 'Contrôle oculaire de routine dans 1 à 2 ans.',
+      recMonitor: 'Réexaminer dans 6 à 12 mois et vérifier les lunettes ou la réfraction.',
+      recCataract: 'Orienter vers une clinique ophtalmologique pour évaluation chirurgicale de la cataracte.',
+      recUrgent: 'Orienter en urgence vers un ophtalmologue (pupille blanche ou déficit pupillaire afférent).',
+      urgRoutine: 'Routine',
+      urgSoon: 'Référence prioritaire',
+      urgUrgent: 'Référence urgente',
+      disclaimer: 'Outil de dépistage basé sur des règles. Un ophtalmologue doit confirmer chaque résultat.',
+      completeAll: 'Remplissez tous les champs obligatoires pour continuer.',
+      next: 'Suivant',
+      saveExam: 'Enregistrer l\'examen',
+      savedTitle: 'Examen enregistré',
+      savedBody: 'Une preuve respectueuse de la vie privée (aucune donnée patient) peut être ancrée sur Starknet depuis l\'écran Blockchain.',
+      openBlockchain: 'Ouvrir Blockchain',
+      backHome: 'Retour à l\'accueil',
+      chainBadge: 'Cataracte',
+      viewDetails: 'Détails de l\'examen',
+      rightEyeLabel: 'Œil droit',
+      leftEyeLabel: 'Œil gauche',
+    },
+
     patientInfo: {
       title: 'Information du Patient',
       subtitle: 'Enregistrer les informations de base (optionnel)',
@@ -920,6 +1184,94 @@ export const translations: Record<Language, Translations> = {
       whichEye: 'Photograph one eye at a time',
     },
     
+    cataractExam: {
+      title: 'Cataract examination',
+      intro: 'Hospital-style cataract work-up: registration, history, acuity, torch exam and lens grading.',
+      startExam: 'Start examination',
+      pathwayTitle: 'Examination steps',
+      stepRegistration: 'Registration',
+      stepHistory: 'History',
+      stepVision: 'Visual acuity',
+      stepTorch: 'Torch exam',
+      stepLens: 'Lens grading',
+      stepPhotos: 'Photos',
+      stepSummary: 'Summary',
+      regTitle: 'Patient registration',
+      regSubtitle: 'Record who is being examined',
+      duration: 'Duration of symptoms',
+      durShort: 'Under 1 month',
+      durMedium: '1-6 months',
+      durLong: 'Over 6 months',
+      historyTitle: 'Symptom history',
+      symptomsTitle: 'Current symptoms',
+      sBlur: 'Blurred or cloudy vision',
+      sGlare: 'Glare or halos around lights',
+      sColor: 'Faded or yellowed colours',
+      sNight: 'Poor night vision',
+      sDouble: 'Double vision in one eye',
+      sChange: 'Frequent change of glasses',
+      riskTitle: 'Risk factors',
+      rDiabetes: 'Diabetes',
+      rSteroid: 'Long-term steroid use',
+      rSmoking: 'Smoking',
+      rTrauma: 'Past eye injury or surgery',
+      rFamily: 'Family history of cataract',
+      rHypertension: 'High blood pressure',
+      visionTitle: 'Visual acuity (Snellen)',
+      visionHelp: 'Test each eye separately at 6 m. Record the smallest line the patient reads.',
+      unaided: 'Without glasses',
+      pinhole: 'With pinhole',
+      vaLegend: 'CF = counting fingers, HM = hand movements, PL = light perception',
+      torchTitle: 'Torch (penlight) exam',
+      torchHelp: 'In a dim room, check the red reflex from arm\'s length and the pupil reaction.',
+      redReflex: 'Red reflex',
+      rrNormal: 'Normal',
+      rrDim: 'Dim or dark',
+      rrAbsent: 'Absent',
+      pupilReaction: 'Pupil reaction',
+      pupNormal: 'Normal',
+      pupAfferent: 'Reduced (afferent defect)',
+      leukocoria: 'White pupil (leukocoria) seen',
+      lensTitle: 'Lens opacity grading (WHO)',
+      lensHelp: 'Grade each type from 0 to 3 against the WHO reference photographs, ideally with a dilated pupil.',
+      nuclear: 'Nuclear (centre)',
+      cortical: 'Cortical (spokes)',
+      psc: 'Posterior subcapsular',
+      g0: 'None',
+      g1: 'Mild',
+      g2: 'Moderate',
+      g3: 'Severe',
+      photosTitle: 'Eye photos',
+      photosHelp: 'Optional photo of each eye for specialist review. Photos are not analysed automatically.',
+      addPhoto: 'Add photo',
+      skipPhoto: 'Skip photo',
+      cancel: 'Cancel',
+      summaryTitle: 'Assessment',
+      findNormal: 'No significant lens opacity',
+      findMonitor: 'Early changes - monitor',
+      findCataract: 'Cataract suspected',
+      findUrgent: 'Urgent - other eye disease possible',
+      recRoutine: 'Routine eye check in 1-2 years.',
+      recMonitor: 'Re-examine in 6-12 months and check glasses or refraction.',
+      recCataract: 'Refer to an eye clinic for cataract surgery assessment.',
+      recUrgent: 'Refer urgently to an ophthalmologist (white pupil or afferent pupil defect).',
+      urgRoutine: 'Routine',
+      urgSoon: 'Priority referral',
+      urgUrgent: 'Urgent referral',
+      disclaimer: 'Rule-based screening aid. An ophthalmologist must confirm every finding.',
+      completeAll: 'Complete all required fields to continue.',
+      next: 'Next',
+      saveExam: 'Save examination',
+      savedTitle: 'Examination saved',
+      savedBody: 'A privacy-preserving proof (no patient data) is ready to be anchored on Starknet from the Blockchain screen.',
+      openBlockchain: 'Open Blockchain',
+      backHome: 'Back to home',
+      chainBadge: 'Cataract',
+      viewDetails: 'Examination details',
+      rightEyeLabel: 'Right eye',
+      leftEyeLabel: 'Left eye',
+    },
+
     patientInfo: {
       title: 'Taarifa za Mgonjwa',
       subtitle: 'Rekodi taarifa za msingi (si lazima)',
@@ -1195,6 +1547,94 @@ export const translations: Record<Language, Translations> = {
       whichEye: 'Photograph one eye at a time',
     },
     
+    cataractExam: {
+      title: 'Cataract examination',
+      intro: 'Hospital-style cataract work-up: registration, history, acuity, torch exam and lens grading.',
+      startExam: 'Start examination',
+      pathwayTitle: 'Examination steps',
+      stepRegistration: 'Registration',
+      stepHistory: 'History',
+      stepVision: 'Visual acuity',
+      stepTorch: 'Torch exam',
+      stepLens: 'Lens grading',
+      stepPhotos: 'Photos',
+      stepSummary: 'Summary',
+      regTitle: 'Patient registration',
+      regSubtitle: 'Record who is being examined',
+      duration: 'Duration of symptoms',
+      durShort: 'Under 1 month',
+      durMedium: '1-6 months',
+      durLong: 'Over 6 months',
+      historyTitle: 'Symptom history',
+      symptomsTitle: 'Current symptoms',
+      sBlur: 'Blurred or cloudy vision',
+      sGlare: 'Glare or halos around lights',
+      sColor: 'Faded or yellowed colours',
+      sNight: 'Poor night vision',
+      sDouble: 'Double vision in one eye',
+      sChange: 'Frequent change of glasses',
+      riskTitle: 'Risk factors',
+      rDiabetes: 'Diabetes',
+      rSteroid: 'Long-term steroid use',
+      rSmoking: 'Smoking',
+      rTrauma: 'Past eye injury or surgery',
+      rFamily: 'Family history of cataract',
+      rHypertension: 'High blood pressure',
+      visionTitle: 'Visual acuity (Snellen)',
+      visionHelp: 'Test each eye separately at 6 m. Record the smallest line the patient reads.',
+      unaided: 'Without glasses',
+      pinhole: 'With pinhole',
+      vaLegend: 'CF = counting fingers, HM = hand movements, PL = light perception',
+      torchTitle: 'Torch (penlight) exam',
+      torchHelp: 'In a dim room, check the red reflex from arm\'s length and the pupil reaction.',
+      redReflex: 'Red reflex',
+      rrNormal: 'Normal',
+      rrDim: 'Dim or dark',
+      rrAbsent: 'Absent',
+      pupilReaction: 'Pupil reaction',
+      pupNormal: 'Normal',
+      pupAfferent: 'Reduced (afferent defect)',
+      leukocoria: 'White pupil (leukocoria) seen',
+      lensTitle: 'Lens opacity grading (WHO)',
+      lensHelp: 'Grade each type from 0 to 3 against the WHO reference photographs, ideally with a dilated pupil.',
+      nuclear: 'Nuclear (centre)',
+      cortical: 'Cortical (spokes)',
+      psc: 'Posterior subcapsular',
+      g0: 'None',
+      g1: 'Mild',
+      g2: 'Moderate',
+      g3: 'Severe',
+      photosTitle: 'Eye photos',
+      photosHelp: 'Optional photo of each eye for specialist review. Photos are not analysed automatically.',
+      addPhoto: 'Add photo',
+      skipPhoto: 'Skip photo',
+      cancel: 'Cancel',
+      summaryTitle: 'Assessment',
+      findNormal: 'No significant lens opacity',
+      findMonitor: 'Early changes - monitor',
+      findCataract: 'Cataract suspected',
+      findUrgent: 'Urgent - other eye disease possible',
+      recRoutine: 'Routine eye check in 1-2 years.',
+      recMonitor: 'Re-examine in 6-12 months and check glasses or refraction.',
+      recCataract: 'Refer to an eye clinic for cataract surgery assessment.',
+      recUrgent: 'Refer urgently to an ophthalmologist (white pupil or afferent pupil defect).',
+      urgRoutine: 'Routine',
+      urgSoon: 'Priority referral',
+      urgUrgent: 'Urgent referral',
+      disclaimer: 'Rule-based screening aid. An ophthalmologist must confirm every finding.',
+      completeAll: 'Complete all required fields to continue.',
+      next: 'Next',
+      saveExam: 'Save examination',
+      savedTitle: 'Examination saved',
+      savedBody: 'A privacy-preserving proof (no patient data) is ready to be anchored on Starknet from the Blockchain screen.',
+      openBlockchain: 'Open Blockchain',
+      backHome: 'Back to home',
+      chainBadge: 'Cataract',
+      viewDetails: 'Examination details',
+      rightEyeLabel: 'Right eye',
+      leftEyeLabel: 'Left eye',
+    },
+
     patientInfo: {
       title: 'Sango ya Mobeli',
       subtitle: 'Kokoma sango ya ntina (esengeli te)',

@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { History as HistoryIcon, FileText } from 'lucide-react-native';
+import { History as HistoryIcon, FileText, ScanEye } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import type { RiskLevel } from '@/constants/visualAcuity';
 import Colors, { FontSize, Gradients, Radius, Shadow, Spacing } from '@/constants/colors';
@@ -11,7 +11,7 @@ import type { BadgeTone } from '@/components/ui';
 
 export default function HistoryScreen() {
   const router = useRouter();
-  const { t, screenings } = useApp();
+  const { t, screenings, cataractExams } = useApp();
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -37,7 +37,7 @@ export default function HistoryScreen() {
       <View style={styles.container}>
         <ScreenHeader variant="bar" title={t.history.title} onBack={() => router.replace('/home')} />
 
-        {screenings.length === 0 ? (
+        {screenings.length === 0 && cataractExams.length === 0 ? (
           <EmptyState
             icon={HistoryIcon}
             title={t.history.noScreenings}
@@ -45,6 +45,32 @@ export default function HistoryScreen() {
           />
         ) : (
           <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
+            {cataractExams.slice().reverse().map((exam) => (
+              <TouchableOpacity
+                key={exam.id}
+                style={styles.screeningCard}
+                onPress={() => router.push(`/cataract-detail?id=${exam.id}`)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.cardHeader}>
+                  <View style={styles.cardTitleRow}>
+                    <LinearGradient colors={[...Gradients.pink]} style={styles.cardAvatar}>
+                      <ScanEye size={20} color="#FFFFFF" />
+                    </LinearGradient>
+                    <Text style={styles.cardTitle}>
+                      {t.cataractExam.chainBadge} · {exam.patientInfo.patientId || `#${exam.id.slice(-8)}`}
+                    </Text>
+                  </View>
+                  <Badge label={getRiskText(exam.assessment.overallRisk)} tone={exam.assessment.overallRisk as BadgeTone} size="sm" />
+                </View>
+                <Text style={styles.dateText}>{formatDate(exam.timestamp)}</Text>
+                {exam.assessment.referralNeeded && (
+                  <View style={styles.referralBadge}>
+                    <Text style={styles.referralText}>{t.results.referralNeeded}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
             {screenings.slice().reverse().map((screening) => (
               <TouchableOpacity
                 key={screening.id}
