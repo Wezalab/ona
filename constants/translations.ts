@@ -56,6 +56,16 @@ export interface Translations {
     cataract: string;
     cataractDesc: string;
     disclaimer: string;
+    role: string;
+    startNow: string;
+    statistics: string;
+    statTotal: string;
+    statReferral: string;
+    statHealthy: string;
+    recent: string;
+    seeAll: string;
+    noRecent: string;
+    more: string;
   };
 
   cataract: {
@@ -322,6 +332,16 @@ export const translations: Record<Language, Translations> = {
       cataract: 'Cataract Check',
       cataractDesc: 'Photo check for signs of cataract',
       disclaimer: 'Screening tool only - Not a medical diagnosis',
+      role: 'Community health worker',
+      startNow: 'Start now',
+      statistics: 'Statistics',
+      statTotal: 'Screenings',
+      statReferral: 'Referrals',
+      statHealthy: 'Low risk',
+      recent: 'Recent screenings',
+      seeAll: 'See all',
+      noRecent: 'No screenings yet. Start your first one above.',
+      more: 'More',
     },
 
     cataract: {
@@ -586,6 +606,16 @@ export const translations: Record<Language, Translations> = {
       cataract: 'Test de la cataracte',
       cataractDesc: 'Photo pour rechercher des signes de cataracte',
       disclaimer: 'Outil de dépistage uniquement - Pas un diagnostic médical',
+      role: 'Agent de santé communautaire',
+      startNow: 'Commencer',
+      statistics: 'Statistiques',
+      statTotal: 'Dépistages',
+      statReferral: 'Références',
+      statHealthy: 'Risque faible',
+      recent: 'Dépistages récents',
+      seeAll: 'Voir tout',
+      noRecent: 'Aucun dépistage pour l\'instant. Lancez le premier ci-dessus.',
+      more: 'Plus',
     },
 
     cataract: {
@@ -851,6 +881,16 @@ export const translations: Record<Language, Translations> = {
       cataract: 'Cataract Check',
       cataractDesc: 'Photo check for signs of cataract',
       disclaimer: 'Screening tool only - Not a medical diagnosis',
+      role: 'Community health worker',
+      startNow: 'Start now',
+      statistics: 'Statistics',
+      statTotal: 'Screenings',
+      statReferral: 'Referrals',
+      statHealthy: 'Low risk',
+      recent: 'Recent screenings',
+      seeAll: 'See all',
+      noRecent: 'No screenings yet. Start your first one above.',
+      more: 'More',
     },
 
     cataract: {
@@ -1116,6 +1156,16 @@ export const translations: Record<Language, Translations> = {
       cataract: 'Cataract Check',
       cataractDesc: 'Photo check for signs of cataract',
       disclaimer: 'Screening tool only - Not a medical diagnosis',
+      role: 'Community health worker',
+      startNow: 'Start now',
+      statistics: 'Statistics',
+      statTotal: 'Screenings',
+      statReferral: 'Referrals',
+      statHealthy: 'Low risk',
+      recent: 'Recent screenings',
+      seeAll: 'See all',
+      noRecent: 'No screenings yet. Start your first one above.',
+      more: 'More',
     },
 
     cataract: {

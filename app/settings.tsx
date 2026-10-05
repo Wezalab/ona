@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Languages, RefreshCw, Trash2, Calendar } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import Colors, { Gradients, Radius, Spacing } from '@/constants/colors';
-import { Button, ScreenHeader, Section } from '@/components/ui';
+import { BottomTabBar, Button, ScreenHeader, Section } from '@/components/ui';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -68,7 +68,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <ScreenHeader variant="bar" title={t.settings.title} onBack={() => router.back()} />
+        <ScreenHeader variant="bar" title={t.settings.title} onBack={() => router.replace('/home')} />
 
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
           <Section icon={Languages} title={t.settings.language}>
@@ -108,6 +108,7 @@ export default function SettingsScreen() {
             <Button title={t.settings.clearData} onPress={handleClearData} variant="danger" icon={Trash2} size="md" />
           </Section>
         </ScrollView>
+        <BottomTabBar />
       </View>
     </SafeAreaView>
   );
