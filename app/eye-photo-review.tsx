@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowRight, Camera, Clock } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';

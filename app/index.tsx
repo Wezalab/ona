@@ -3,7 +3,8 @@ import { useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { Eye } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import Colors, { Gradients } from '@/constants/colors';
 
 export default function Index() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function Index() {
   }, [isLoading, onboardingDone, language, router]);
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={[...Gradients.hero]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.container}>
       <View style={styles.logoContainer}>
         <View style={styles.iconCircle}>
           <Eye size={64} color={Colors.surface} strokeWidth={2} />
@@ -30,7 +31,7 @@ export default function Index() {
         <Text style={styles.appName}>ONA</Text>
         <Text style={styles.tagline}>Eye Health Screening</Text>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -39,7 +40,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.primary,
   },
   logoContainer: {
     alignItems: 'center',

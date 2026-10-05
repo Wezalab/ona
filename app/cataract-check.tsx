@@ -1,7 +1,8 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AlertTriangle, Camera, CheckCircle2, Eye, Lightbulb, Sun } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';

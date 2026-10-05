@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '@/contexts/AppContext';
-import Colors, { FontSize, Spacing } from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import Colors, { FontSize, Gradients, Spacing } from '@/constants/colors';
 import type { Language } from '@/constants/translations';
 import { SelectableCard } from '@/components/ui';
 
@@ -20,7 +22,7 @@ export default function LanguageSelectScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
+        <LinearGradient colors={[...Gradients.hero]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
           <Image
             source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/9vlow4ppzc6erbcy80bri' }}
             style={styles.logo}
@@ -28,7 +30,7 @@ export default function LanguageSelectScreen() {
           />
           <Text style={styles.title}>Choisir la langue</Text>
           <Text style={styles.subtitle}>Select your language / Chagua lugha yako / Pona monoko</Text>
-        </View>
+        </LinearGradient>
 
         <View style={styles.buttonContainer}>
           <SelectableCard title="English" subtitle="English" selected={selected === 'en'} onPress={() => handleLanguageSelect('en')} />
@@ -44,7 +46,7 @@ export default function LanguageSelectScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryDark,
   },
   container: {
     flex: 1,
@@ -55,11 +57,12 @@ const styles = StyleSheet.create({
     paddingTop: 72,
     paddingHorizontal: Spacing.xl,
     paddingBottom: Spacing.xxl,
-    backgroundColor: Colors.primary,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
   },
   logo: {
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
     width: 200,
     height: 100,
     marginBottom: Spacing.md,

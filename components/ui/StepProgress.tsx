@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
-import Colors, { FontSize, Spacing } from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import Colors, { FontSize, Spacing, Gradients } from '@/constants/colors';
 
 interface StepProgressProps {
   steps: string[];
@@ -15,12 +16,11 @@ export default function StepProgress({ steps, currentStepIndex }: StepProgressPr
           const isCurrent = index === currentStepIndex;
           return (
             <View key={index} style={styles.segmentWrap}>
-              <View
-                style={[
-                  styles.segment,
-                  (isDone || isCurrent) && styles.segmentActive,
-                ]}
-              />
+              {isDone || isCurrent ? (
+                <LinearGradient colors={[...Gradients.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.segment} />
+              ) : (
+                <View style={styles.segment} />
+              )}
             </View>
           );
         })}
@@ -44,8 +44,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   segment: {
-    height: 4,
-    borderRadius: 2,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: Colors.border,
   },
   segmentActive: {

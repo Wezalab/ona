@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { History as HistoryIcon, FileText } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import type { RiskLevel } from '@/constants/visualAcuity';
@@ -91,7 +92,7 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryDark,
   },
   container: {
     flex: 1,
