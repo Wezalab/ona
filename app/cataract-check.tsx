@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AlertTriangle, Camera, CheckCircle2, Eye, Lightbulb, Sun } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
-import { Badge, Button, Card, GradientCard, ScreenHeader } from '@/components/ui';
+import { Badge, BottomTabBar, Button, Card, GradientCard, ScreenHeader } from '@/components/ui';
 
 type Stage = 'intro' | 'capture' | 'result';
 
@@ -93,8 +93,8 @@ export default function CataractCheckScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScreenHeader variant="bar" title={c.title} onBack={() => router.back()} />
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScreenHeader variant="bar" title={c.title} onBack={() => router.replace('/home')} />
+      <ScrollView contentContainerStyle={styles.scroll} style={styles.flexOne}>
         <GradientCard gradient="violet">
           <View style={styles.row}>
             <Eye size={32} color="#fff" />
@@ -128,12 +128,14 @@ export default function CataractCheckScreen() {
         <Button title={c.startCapture} icon={Camera} onPress={() => setStage('capture')} />
         <Text style={styles.disclaimer}>{c.disclaimer}</Text>
       </ScrollView>
+      <BottomTabBar />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
+  flexOne: { flex: 1 },
   scroll: { padding: Spacing.xl, gap: Spacing.lg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.xl, gap: Spacing.lg },
   centerText: { fontSize: FontSize.base, color: Colors.textSecondary, textAlign: 'center' },

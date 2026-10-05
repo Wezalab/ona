@@ -5,7 +5,7 @@ import { History as HistoryIcon, FileText } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import type { RiskLevel } from '@/constants/visualAcuity';
 import Colors, { FontSize, Radius, Shadow, Spacing } from '@/constants/colors';
-import { Badge, EmptyState, ScreenHeader } from '@/components/ui';
+import { Badge, BottomTabBar, EmptyState, ScreenHeader } from '@/components/ui';
 import type { BadgeTone } from '@/components/ui';
 
 export default function HistoryScreen() {
@@ -34,7 +34,7 @@ export default function HistoryScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <ScreenHeader variant="bar" title={t.history.title} onBack={() => router.back()} />
+        <ScreenHeader variant="bar" title={t.history.title} onBack={() => router.replace('/home')} />
 
         {screenings.length === 0 ? (
           <EmptyState
@@ -84,6 +84,7 @@ export default function HistoryScreen() {
             ))}
           </ScrollView>
         )}
+        <BottomTabBar />
       </View>
     </SafeAreaView>
   );

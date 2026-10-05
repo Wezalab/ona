@@ -123,7 +123,7 @@ const variantStyles = StyleSheet.create({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: Radius.xl,
+    borderRadius: Radius.pill,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',

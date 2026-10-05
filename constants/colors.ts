@@ -1,19 +1,19 @@
 const Colors = {
-  primary: '#0891B2',
-  primaryDark: '#0E7490',
-  primaryLight: '#06B6D4',
+  primary: '#8A19D6',
+  primaryDark: '#7A12C4',
+  primaryLight: '#A855F7',
 
-  background: '#F8FAFC',
+  background: '#F8F9FF',
   surface: '#FFFFFF',
-  surfaceElevated: '#F1F5F9',
+  surfaceElevated: '#F1F3FB',
 
-  text: '#0F172A',
-  textSecondary: '#475569',
+  text: '#03314B',
+  textSecondary: '#4A6275',
   textLight: '#94A3B8',
   textOnPrimary: '#FFFFFF',
 
-  border: '#E2E8F0',
-  borderLight: '#F1F5F9',
+  border: '#E3E8F4',
+  borderLight: '#F1F3FB',
 
   success: '#10B981',
   successLight: '#D1FAE5',
@@ -31,14 +31,17 @@ const Colors = {
   infoLight: '#DBEAFE',
 
   // Accent palette (v2)
-  violet: '#7C3AED',
-  violetLight: '#EDE9FE',
-  pink: '#EC4899',
-  pinkLight: '#FCE7F3',
+  violet: '#8A19D6',
+  violetLight: '#F3E8FD',
+  pink: '#CB0C9F',
+  pinkLight: '#FBE4F5',
   amber: '#F59E0B',
   emerald: '#10B981',
   indigo: '#4F46E5',
   indigoLight: '#E0E7FF',
+  magenta: '#CB0C9F',
+  lime: '#82D616',
+  navy: '#03314B',
   teal: '#0D9488',
   tealLight: '#CCFBF1',
 
@@ -54,14 +57,14 @@ export default Colors;
 // of re-declaring paddings, radii and shadows inline.
 // ── Gradients (v2): [start, end] pairs for expo-linear-gradient ──────────
 export const Gradients = {
-  hero: ['#0E7490', '#4F46E5', '#7C3AED'],
-  primary: ['#06B6D4', '#4F46E5'],
+  hero: ['#7A12C4', '#8A19D6', '#B23FE0'],
+  primary: ['#A04BE8', '#8A19D6'],
   success: ['#34D399', '#0D9488'],
   warning: ['#FBBF24', '#F97316'],
   danger: ['#F87171', '#DC2626'],
   info: ['#60A5FA', '#4F46E5'],
-  violet: ['#A78BFA', '#7C3AED'],
-  pink: ['#F472B6', '#DB2777'],
+  violet: ['#B76AF0', '#8A19D6'],
+  pink: ['#E552C4', '#CB0C9F'],
   slate: ['#94A3B8', '#475569'],
 } as const;
 

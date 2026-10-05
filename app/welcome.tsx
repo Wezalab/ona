@@ -28,6 +28,7 @@ export default function WelcomeScreen() {
           <Text style={styles.subtitle}>{t.welcome.subtitle}</Text>
         </LinearGradient>
 
+        <View style={styles.sheet}>
         <View style={styles.features}>
           <Card style={styles.feature} elevated>
             <View style={styles.iconContainer}>
@@ -48,6 +49,7 @@ export default function WelcomeScreen() {
 
         <View style={styles.footer}>
           <Button title={t.welcome.getStarted} onPress={handleContinue} />
+        </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -70,9 +72,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 72,
     paddingHorizontal: Spacing.xl,
-    paddingBottom: Spacing.xxl,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    paddingBottom: 56,
+  },
+  sheet: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    marginTop: -32,
+    paddingTop: Spacing.xxl,
+    paddingBottom: Spacing.xl,
   },
   logo: {
     borderRadius: 16,
@@ -96,8 +105,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   features: {
-    flex: 1,
-    paddingTop: Spacing.xl,
     paddingHorizontal: Spacing.xl,
     gap: Spacing.xl,
   },
