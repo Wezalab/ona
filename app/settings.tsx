@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Languages, RefreshCw, Trash2, Calendar } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors, { Radius, Spacing } from '@/constants/colors';
+import Colors, { Gradients, Radius, Spacing } from '@/constants/colors';
 import { Button, ScreenHeader, Section } from '@/components/ui';
 
 export default function SettingsScreen() {
@@ -78,6 +80,9 @@ export default function SettingsScreen() {
                   onPress={() => handleLanguageChange(option.code)}
                   activeOpacity={0.7}
                 >
+                  {language === option.code ? (
+                    <LinearGradient colors={[...Gradients.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFill} />
+                  ) : null}
                   <Text style={[styles.languageText, language === option.code && styles.languageTextSelected]}>
                     {option.label}
                   </Text>
@@ -111,7 +116,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryDark,
   },
   container: {
     flex: 1,
@@ -131,12 +136,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderWidth: 2,
     borderColor: Colors.border,
-    borderRadius: Radius.md,
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
     paddingVertical: Spacing.lg,
     paddingHorizontal: Spacing.lg,
   },
   languageOptionSelected: {
-    backgroundColor: Colors.primaryLight,
     borderColor: Colors.primary,
   },
   languageText: {

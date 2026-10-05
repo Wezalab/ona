@@ -30,6 +30,18 @@ const Colors = {
   info: '#3B82F6',
   infoLight: '#DBEAFE',
 
+  // Accent palette (v2)
+  violet: '#7C3AED',
+  violetLight: '#EDE9FE',
+  pink: '#EC4899',
+  pinkLight: '#FCE7F3',
+  amber: '#F59E0B',
+  emerald: '#10B981',
+  indigo: '#4F46E5',
+  indigoLight: '#E0E7FF',
+  teal: '#0D9488',
+  tealLight: '#CCFBF1',
+
   disabled: '#CBD5E1',
   overlay: 'rgba(0, 0, 0, 0.5)',
   overlayLight: 'rgba(0, 0, 0, 0.3)',
@@ -40,6 +52,21 @@ export default Colors;
 // ── Shared design tokens (spacing / radius / shadow / typography) ─────────
 // Used by components/ui/* so every screen shares one visual language instead
 // of re-declaring paddings, radii and shadows inline.
+// ── Gradients (v2): [start, end] pairs for expo-linear-gradient ──────────
+export const Gradients = {
+  hero: ['#0E7490', '#4F46E5', '#7C3AED'],
+  primary: ['#06B6D4', '#4F46E5'],
+  success: ['#34D399', '#0D9488'],
+  warning: ['#FBBF24', '#F97316'],
+  danger: ['#F87171', '#DC2626'],
+  info: ['#60A5FA', '#4F46E5'],
+  violet: ['#A78BFA', '#7C3AED'],
+  pink: ['#F472B6', '#DB2777'],
+  slate: ['#94A3B8', '#475569'],
+} as const;
+
+export type GradientName = keyof typeof Gradients;
+
 export const Spacing = {
   xs: 4,
   sm: 8,
@@ -55,6 +82,7 @@ export const Radius = {
   md: 12,
   lg: 16,
   xl: 20,
+  xxl: 28,
   pill: 999,
 };
 
@@ -72,9 +100,9 @@ export const Shadow = {
   card: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   button: {
     shadowColor: Colors.primary,

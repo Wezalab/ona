@@ -1,9 +1,11 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { User, ArrowRight } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
+import Colors, { FontSize, Gradients, Radius, Spacing } from '@/constants/colors';
 import type { PatientInfo } from '@/contexts/AppContext';
 import { Button, ScreenHeader, StepProgress, TextField } from '@/components/ui';
 
@@ -78,33 +80,23 @@ export default function PatientInfoScreen() {
             <View style={styles.field}>
               <Text style={styles.label}>{t.patientInfo.gender}</Text>
               <View style={styles.genderContainer}>
-                <TouchableOpacity
-                  style={[styles.genderButton, gender === 'male' && styles.genderButtonSelected]}
-                  onPress={() => setGender('male')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.genderText, gender === 'male' && styles.genderTextSelected]}>
-                    {t.patientInfo.male}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.genderButton, gender === 'female' && styles.genderButtonSelected]}
-                  onPress={() => setGender('female')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.genderText, gender === 'female' && styles.genderTextSelected]}>
-                    {t.patientInfo.female}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.genderButton, gender === 'other' && styles.genderButtonSelected]}
-                  onPress={() => setGender('other')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.genderText, gender === 'other' && styles.genderTextSelected]}>
-                    {t.patientInfo.other}
-                  </Text>
-                </TouchableOpacity>
+                {([
+                  ['male', t.patientInfo.male],
+                  ['female', t.patientInfo.female],
+                  ['other', t.patientInfo.other],
+                ] as const).map(([value, label]) => (
+                  <TouchableOpacity
+                    key={value}
+                    style={[styles.genderButton, gender === value && styles.genderButtonSelected]}
+                    onPress={() => setGender(value)}
+                    activeOpacity={0.7}
+                  >
+                    {gender === value ? (
+                      <LinearGradient colors={[...Gradients.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+                    ) : null}
+                    <Text style={[styles.genderText, gender === value && styles.genderTextSelected]}>{label}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
 
@@ -136,7 +128,7 @@ const styles = StyleSheet.create({
   },
   stepBar: {
     paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.md,
+    paddingTop: Spacing.lg,
     paddingBottom: Spacing.sm,
     backgroundColor: Colors.background,
   },
@@ -174,12 +166,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
-    borderRadius: Radius.md,
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
     paddingVertical: Spacing.lg,
     alignItems: 'center',
   },
   genderButtonSelected: {
-    backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
   genderText: {

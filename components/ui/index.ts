@@ -10,3 +10,4 @@ export { default as EmptyState } from './EmptyState';
 export { default as Section } from './Section';
 export { default as TextField } from './TextField';
 export { default as SelectableCard } from './SelectableCard';
+export { default as GradientCard } from './GradientCard';

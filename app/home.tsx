@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Image } from 'react-native';
-import { Plus, History, Settings, Info, Server, ShieldCheck } from 'lucide-react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Plus, History, Settings, Info, Server, ShieldCheck, ScanEye } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import Colors, { Spacing } from '@/constants/colors';
+import Colors, { Gradients, Spacing } from '@/constants/colors';
 import { IconTile } from '@/components/ui';
 
 export default function HomeScreen() {
@@ -16,6 +18,13 @@ export default function HomeScreen() {
       description: t.home.newScreeningDesc,
       color: Colors.primary,
       onPress: () => router.push('/patient-info'),
+    },
+    {
+      icon: ScanEye,
+      title: t.home.cataract,
+      description: t.home.cataractDesc,
+      color: Colors.violet,
+      onPress: () => router.push('/cataract-check'),
     },
     {
       icon: History,
@@ -35,14 +44,14 @@ export default function HomeScreen() {
       icon: ShieldCheck,
       title: t.home.blockchain,
       description: t.home.blockchainDesc,
-      color: Colors.primaryLight,
+      color: Colors.teal,
       onPress: () => router.push('/blockchain'),
     },
     {
       icon: Settings,
       title: t.home.settings,
       description: t.home.settingsDesc,
-      color: Colors.textSecondary,
+      color: Colors.pink,
       onPress: () => router.push('/settings'),
     },
     {
@@ -57,14 +66,14 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
+        <LinearGradient colors={[...Gradients.hero]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
           <Image
             source={require('@/assets/images/icon.png')}
             style={styles.logo}
             resizeMode="contain"
           />
           <Text style={styles.subtitle}>{t.appName}</Text>
-        </View>
+        </LinearGradient>
 
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
           {menuItems.map((item, index) => (
@@ -81,7 +90,7 @@ export default function HomeScreen() {
 
         <View style={styles.disclaimer}>
           <Text style={styles.disclaimerText}>
-            ⚠️ Outil de dépistage uniquement - Pas un diagnostic médical
+            ⚠️ {t.home.disclaimer}
           </Text>
         </View>
       </View>
@@ -92,14 +101,13 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.primary,
+    backgroundColor: '#0E7490',
   },
   container: {
     flex: 1,
     backgroundColor: Colors.background,
   },
   header: {
-    backgroundColor: Colors.primary,
     paddingTop: 56,
     paddingBottom: Spacing.xxl,
     paddingHorizontal: Spacing.xl,
@@ -108,6 +116,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
     width: 200,
     height: 80,
     marginBottom: Spacing.md,

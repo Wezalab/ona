@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { ComponentType } from 'react';
-import Colors, { FontSize, Radius, Shadow, Spacing } from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import Colors, { FontSize, Radius, Shadow, Spacing, Gradients } from '@/constants/colors';
 
 interface IconProps {
   size?: number;
@@ -23,6 +24,9 @@ export default function SelectableCard({ title, subtitle, icon: Icon, selected =
       onPress={onPress}
       activeOpacity={0.7}
     >
+      {selected ? (
+        <LinearGradient colors={[...Gradients.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+      ) : null}
       {Icon && <Icon size={size === 'lg' ? 36 : 28} color={selected ? Colors.surface : Colors.primary} />}
       <Text style={[styles.title, size === 'lg' && styles.titleLg, selected && styles.textSelected]}>{title}</Text>
       {subtitle ? <Text style={[styles.subtitle, selected && styles.subtitleSelected]}>{subtitle}</Text> : null}
@@ -33,7 +37,8 @@ export default function SelectableCard({ title, subtitle, icon: Icon, selected =
 const styles = StyleSheet.create({
   card: {
     backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
     paddingVertical: Spacing.xl,
     paddingHorizontal: Spacing.xl,
     alignItems: 'center',
@@ -47,7 +52,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xxl,
   },
   cardSelected: {
-    backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
   title: {
