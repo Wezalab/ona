@@ -8,28 +8,37 @@ import { useApp } from '@/contexts/AppContext';
 import {
   RISK_FACTOR_KEYS,
   SYMPTOM_KEYS,
-  VA_SCALE,
   assessExam,
+  vaIndex,
   type CataractEyeExam,
   type CataractExamRecord,
   type LensGrade,
+  type VaCode,
   type RiskFactorKey,
   type SymptomDuration,
   type SymptomKey,
 } from '@/constants/cataractExam';
 import Colors, { FontSize, Radius, Spacing } from '@/constants/colors';
-import { Button, Card, ChoiceChips, GradientCard, ScreenHeader, StepProgress, TextField } from '@/components/ui';
+import { Badge, Button, Card, ChoiceChips, GradientCard, ScreenHeader, StepProgress, TextField } from '@/components/ui';
+import TumblingETest from '@/components/va/TumblingETest';
 import CataractSummary from '@/components/cataract/CataractSummary';
 
 type Side = 'rightEye' | 'leftEye';
 type EyeDraft = Partial<CataractEyeExam>;
 
 const SIDES: Side[] = ['rightEye', 'leftEye'];
-const vaOptions = VA_SCALE.map((v) => ({ value: v, label: v }));
+const belowOptions = (['3/60', 'CF', 'HM', 'PL'] as VaCode[]).map((v) => ({ value: v, label: v }));
+
+type TestKind = 'unaided' | 'pinhole';
+interface ActiveTest {
+  side: Side;
+  kind: TestKind;
+  phase: 'run' | 'below';
+}
 
 export default function CataractExamScreen() {
   const router = useRouter();
-  const { t, saveCataractExam } = useApp();
+  const { t, saveCataractExam, calibration } = useApp();
   const c = t.cataractExam;
   const cameraRef = useRef<CameraView>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -48,6 +57,8 @@ export default function CataractExamScreen() {
   const [riskFactors, setRiskFactors] = useState<RiskFactorKey[]>([]);
   const [eyes, setEyes] = useState<Record<Side, EyeDraft>>({ rightEye: { leukocoria: false }, leftEye: { leukocoria: false } });
   const [capturing, setCapturing] = useState<Side | null>(null);
+  const [testing, setTesting] = useState<ActiveTest | null>(null);
+  const [belowChoice, setBelowChoice] = useState<VaCode | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<CataractExamRecord | null>(null);
 
@@ -97,6 +108,23 @@ export default function CataractExamScreen() {
     }
   };
 
+  /** Store an acuity result. With good unaided acuity a pinhole run adds nothing, so it is copied. */
+  const recordAcuity = (side: Side, kind: TestKind, code: VaCode) => {
+    if (kind === 'unaided') setEye(side, vaIndex(code) <= 1 ? { vaUnaided: code, vaPinhole: code } : { vaUnaided: code });
+    else setEye(side, { vaPinhole: code });
+  };
+
+  const handleTestComplete = ({ denominator, belowChart }: { denominator: number; belowChart: boolean }) => {
+    if (!testing) return;
+    if (belowChart) {
+      setBelowChoice(null);
+      setTesting({ ...testing, phase: 'below' });
+      return;
+    }
+    recordAcuity(testing.side, testing.kind, `6/${denominator}` as VaCode);
+    setTesting(null);
+  };
+
   const takePhoto = async () => {
     try {
       const shot = await cameraRef.current?.takePictureAsync({ quality: 0.8 });
@@ -137,6 +165,45 @@ export default function CataractExamScreen() {
           <Button title={c.openBlockchain} icon={ShieldCheck} onPress={() => router.replace('/blockchain')} />
           <Button title={c.backHome} variant="outline" onPress={() => router.replace('/home')} />
         </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Visual acuity test (tumbling E, 6/60 down to 6/6) ───────────────────
+  if (testing && calibration) {
+    const kindLabel = testing.kind === 'unaided' ? c.unaided : c.pinhole;
+    if (testing.phase === 'below') {
+      return (
+        <SafeAreaView style={styles.safeArea}>
+          <ScreenHeader variant="bar" title={c.testingTitle} onBack={() => setTesting(null)} />
+          <ScrollView contentContainerStyle={styles.scroll}>
+            <Card elevated style={styles.rounded}>
+              <Text style={styles.cardTitle}>{c.belowTitle}</Text>
+              <Text style={styles.help}>{c.belowHelp}</Text>
+              <ChoiceChips value={belowChoice} onChange={setBelowChoice} options={belowOptions} />
+            </Card>
+            <Button
+              title={c.saveResult}
+              disabled={!belowChoice}
+              onPress={() => {
+                if (belowChoice) recordAcuity(testing.side, testing.kind, belowChoice);
+                setTesting(null);
+              }}
+            />
+          </ScrollView>
+        </SafeAreaView>
+      );
+    }
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ScreenHeader variant="bar" title={`${eyeLabel[testing.side]} · ${kindLabel}`} onBack={() => setTesting(null)} />
+        {testing.kind === 'pinhole' ? <Text style={styles.pinholeHint}>{c.usePinhole}</Text> : null}
+        <TumblingETest
+          key={`${testing.side}-${testing.kind}`}
+          calibration={calibration}
+          coverLabel={testing.side === 'rightEye' ? t.eyeSelect.coverLeft : t.eyeSelect.coverRight}
+          onComplete={handleTestComplete}
+        />
       </SafeAreaView>
     );
   }
@@ -228,18 +295,41 @@ export default function CataractExamScreen() {
           <>
             <Text style={styles.stepTitle}>{c.visionTitle}</Text>
             <Text style={styles.help}>{c.visionHelp}</Text>
-            {SIDES.map((s) =>
-              eyeCard(
-                s,
-                <>
-                  <Text style={styles.label}>{c.unaided}</Text>
-                  <ChoiceChips value={eyes[s].vaUnaided} onChange={(v) => setEye(s, { vaUnaided: v })} options={vaOptions} />
-                  <Text style={styles.label}>{c.pinhole}</Text>
-                  <ChoiceChips value={eyes[s].vaPinhole} onChange={(v) => setEye(s, { vaPinhole: v })} options={vaOptions} />
-                </>,
-              ),
+            {!calibration ? (
+              <Card elevated style={styles.rounded}>
+                <Text style={styles.body}>{c.calibrateFirst}</Text>
+                <Button title={c.calibrate} onPress={() => router.push('/va-calibration?returnTo=back')} />
+              </Card>
+            ) : (
+              SIDES.map((s) => {
+                const unaided = eyes[s].vaUnaided;
+                const pinhole = eyes[s].vaPinhole;
+                const pinholeSkipped = !!unaided && vaIndex(unaided) <= 1;
+                const row = (kind: TestKind, label: string, value: VaCode | undefined, enabled: boolean) => (
+                  <View key={kind} style={styles.testRow}>
+                    <View style={styles.flex}>
+                      <Text style={styles.label}>{label}</Text>
+                      {value ? (
+                        <Badge label={value} tone="primary" />
+                      ) : (
+                        <Text style={styles.help}>{kind === 'pinhole' && pinholeSkipped ? c.pinholeNotNeeded : c.notTested}</Text>
+                      )}
+                    </View>
+                    {kind === 'pinhole' && pinholeSkipped ? null : (
+                      <Button
+                        title={value ? c.retest : c.startTest}
+                        size="md"
+                        fullWidth={false}
+                        variant={value ? 'outline' : 'primary'}
+                        disabled={!enabled}
+                        onPress={() => setTesting({ side: s, kind, phase: 'run' })}
+                      />
+                    )}
+                  </View>
+                );
+                return eyeCard(s, <>{row('unaided', c.unaided, unaided, true)}{row('pinhole', c.pinhole, pinhole, !!unaided)}</>);
+              })
             )}
-            <Text style={styles.help}>{c.vaLegend}</Text>
           </>
         );
       case 3:
@@ -377,6 +467,8 @@ const styles = StyleSheet.create({
   label: { fontSize: FontSize.md, fontWeight: '700', color: Colors.navy, marginTop: Spacing.sm },
   rounded: { borderRadius: Radius.xl, gap: Spacing.md },
   cardTitle: { fontSize: FontSize.lg, fontWeight: '800', color: Colors.navy },
+  testRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
+  pinholeHint: { textAlign: 'center', color: Colors.warningDark, fontSize: FontSize.sm, fontWeight: '700', paddingTop: Spacing.sm },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingVertical: 2 },
   switchLabel: { fontSize: FontSize.base, color: Colors.text },
   photo: { width: '100%', height: 180, borderRadius: Radius.lg },
