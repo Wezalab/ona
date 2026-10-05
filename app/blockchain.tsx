@@ -26,7 +26,7 @@ function truncateHex(hex: string, chars = 10): string {
 
 export default function BlockchainScreen() {
   const router = useRouter();
-  const { t, screenings } = useApp();
+  const { t, screenings, cataractExams } = useApp();
   const {
     network,
     networkLoading,
@@ -68,7 +68,22 @@ export default function BlockchainScreen() {
         });
       }
     }
-  }, [screenings, enqueueProof]);
+    // Cataract examinations are anchored the same way: only timestamp, risk
+    // level, facility code and the referral flag go into the proof - never
+    // patient identifiers, symptoms, findings or photos.
+    for (const e of cataractExams) {
+      if (!enqueuedIdsRef.current.has(e.id)) {
+        enqueuedIdsRef.current.add(e.id);
+        void enqueueProof({
+          id: e.id,
+          timestamp: e.timestamp,
+          riskLevel: e.assessment.overallRisk,
+          facilityCode: 1,
+          isReferral: e.assessment.referralNeeded,
+        });
+      }
+    }
+  }, [screenings, cataractExams, enqueueProof]);
 
   // ─── Anchor all pending proofs in sequence ────────────────────────────────
   const handleAnchorAll = useCallback(async () => {
@@ -271,6 +286,9 @@ export default function BlockchainScreen() {
                 {proofQueue.map((proof) => (
                   <Card key={proof.record.id}>
                     <View style={styles.cardRow}>
+                      {proof.record.id.startsWith('cataract_') ? (
+                        <Badge label={t.cataractExam.chainBadge} tone="primary" size="sm" />
+                      ) : null}
                       <Badge label={proof.record.riskLevel.toUpperCase()} tone={proof.record.riskLevel as BadgeTone} size="sm" />
                       <Text style={styles.cardDate}>
                         {new Date(proof.record.timestamp).toLocaleDateString()}

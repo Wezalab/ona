@@ -32,6 +32,8 @@ function RootLayoutNav() {
       <Stack.Screen name="blockchain" />
       <Stack.Screen name="about" />
       <Stack.Screen name="cataract-check" />
+      <Stack.Screen name="cataract-exam" />
+      <Stack.Screen name="cataract-detail" />
     </Stack>
   );
 }

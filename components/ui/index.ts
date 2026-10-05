@@ -12,3 +12,4 @@ export { default as TextField } from './TextField';
 export { default as SelectableCard } from './SelectableCard';
 export { default as GradientCard } from './GradientCard';
 export { default as BottomTabBar } from './BottomTabBar';
+export { default as ChoiceChips } from './ChoiceChips';
