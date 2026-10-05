@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ArrowRight, Eye } from 'lucide-react-native';
+import { ArrowRight, CheckCircle2, Eye } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import type { CalibrationState } from '@/contexts/AppContext';
 import {
@@ -89,6 +89,15 @@ export default function TumblingETest({ calibration, coverLabel, onComplete }: P
     [direction, outcomes, levelIndex, lastPassedIndex, onComplete],
   );
 
+  /** Clinician picks any line: restart its trials; lines above are assumed read. */
+  const jumpToLine = (index: number) => {
+    if (index === levelIndex) return;
+    setLevelIndex(index);
+    setLastPassedIndex(index - 1);
+    setOutcomes(Array(TRIALS_PER_LEVEL).fill(null));
+    setDirection(randomDirection());
+  };
+
   const denominator = SNELLEN_DENOMINATORS[levelIndex];
   const heightMm = computeOptotypeHeightMm(denominator, calibration.testDistanceMeters);
   // Never distort the letter: if the line cannot fit the screen it is capped, not stretched.
@@ -124,6 +133,23 @@ export default function TumblingETest({ calibration, coverLabel, onComplete }: P
           </View>
         </View>
         <Text style={styles.instructions}>{t.visualAcuity.testInstructions}</Text>
+        <View style={styles.lineBox}>
+          <Text style={styles.lineTitle}>{t.eyeSelect.chooseLine}</Text>
+          <View style={styles.lineRow}>
+            {SNELLEN_DENOMINATORS.map((d, i) => {
+              const active = i === levelIndex;
+              return (
+                <TouchableOpacity key={d} style={[styles.lineChip, active && styles.lineChipActive]} onPress={() => jumpToLine(i)} activeOpacity={0.8}>
+                  {active ? (
+                    <LinearGradient colors={[...Gradients.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+                  ) : null}
+                  <Text style={[styles.lineChipText, active && styles.lineChipTextActive]}>{snellenLabel(d)}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
       </View>
 
       <ScrollView style={styles.flex} contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
@@ -149,7 +175,20 @@ export default function TumblingETest({ calibration, coverLabel, onComplete }: P
           <Text style={styles.cantSeeText}>{t.visualAcuity.cantSee}</Text>
           <ArrowRight size={18} color="#FFFFFF" />
         </TouchableOpacity>
+
       </ScrollView>
+      <View style={styles.recordBar}>
+          <TouchableOpacity
+            style={styles.recordButton}
+            onPress={() => onComplete({ denominator, belowChart: false })}
+            activeOpacity={0.8}
+          >
+            <CheckCircle2 size={20} color={Colors.primary} />
+            <Text style={styles.recordText}>
+              {t.eyeSelect.recordConfirm} · {snellenLabel(denominator)}
+            </Text>
+          </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -194,6 +233,36 @@ const styles = StyleSheet.create({
   },
   dirArrow: { fontSize: 34, color: '#FFFFFF' },
   dirLabel: { fontSize: FontSize.xs, fontWeight: '700', color: '#FFFFFF' },
+  lineBox: { gap: Spacing.sm, marginTop: Spacing.sm },
+  lineTitle: { fontSize: FontSize.md, fontWeight: '800', color: Colors.navy },
+  lineRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  lineChip: {
+    borderRadius: Radius.pill,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+    paddingVertical: 8,
+    paddingHorizontal: Spacing.lg,
+    overflow: 'hidden',
+  },
+  lineChipActive: { borderColor: Colors.primary },
+  lineChipText: { fontSize: FontSize.base, fontWeight: '800', color: Colors.navy },
+  lineChipTextActive: { color: '#FFFFFF' },
+  lineHint: { fontSize: FontSize.xs, color: Colors.textSecondary },
+  recordBar: { alignItems: 'center', paddingVertical: Spacing.md, paddingHorizontal: Spacing.xl, backgroundColor: Colors.surface },
+  recordHelp: { fontSize: FontSize.xs, color: Colors.textSecondary, textAlign: 'center' },
+  recordButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    borderRadius: Radius.pill,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xxl,
+    backgroundColor: Colors.surface,
+  },
+  recordText: { fontSize: FontSize.md, fontWeight: '800', color: Colors.primary },
   cantSee: {
     flexDirection: 'row',
     alignItems: 'center',
