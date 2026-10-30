@@ -12,8 +12,8 @@ export default function SettingsScreen() {
   const { t, language, setLanguage, syncData, clearAllData, lastSync } = useApp();
 
   const languageOptions = [
-    { code: 'en' as const, label: 'English' },
     { code: 'fr' as const, label: 'Français' },
+    { code: 'en' as const, label: 'English' },
     { code: 'sw' as const, label: 'Kiswahili' },
     { code: 'ln' as const, label: 'Lingala' },
   ];

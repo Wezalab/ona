@@ -27,7 +27,7 @@ export default function HomeScreen() {
     risk === 'low' ? t.results.riskLow : risk === 'medium' ? t.results.riskMedium : t.results.riskHigh;
 
   const formatDate = (ts: number) =>
-    new Date(ts).toLocaleDateString(undefined, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
   return (
     <SafeAreaView style={styles.safeArea}>

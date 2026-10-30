@@ -30,7 +30,7 @@ export default function EyeCaptureScreen() {
   ];
 
   if (!permission) {
-    return <View style={styles.container}><Text>Loading...</Text></View>;
+    return <View style={styles.container}><Text>Chargement...</Text></View>;
   }
 
   if (!permission.granted) {

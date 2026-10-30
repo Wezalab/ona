@@ -19,7 +19,7 @@ export default function CataractDetailScreen() {
       {exam ? (
         <ScrollView contentContainerStyle={styles.scroll}>
           <Text style={styles.meta}>
-            {exam.patientInfo.patientId || `#${exam.id.slice(-8)}`} · {new Date(exam.timestamp).toLocaleString()}
+            {exam.patientInfo.patientId || `#${exam.id.slice(-8)}`} · {new Date(exam.timestamp).toLocaleString('fr-FR')}
           </Text>
           <CataractSummary rightEye={exam.rightEye} leftEye={exam.leftEye} assessment={exam.assessment} />
         </ScrollView>
