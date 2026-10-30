@@ -29,7 +29,7 @@ export default function Index() {
           <Eye size={64} color={Colors.surface} strokeWidth={2} />
         </View>
         <Text style={styles.appName}>ONA</Text>
-        <Text style={styles.tagline}>Eye Health Screening</Text>
+        <Text style={styles.tagline}>Dépistage de la santé oculaire</Text>
       </View>
     </LinearGradient>
   );
